@@ -10,6 +10,9 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
+    <!-- Audio Backsound -->
+    <audio id="bgMusic" src="backsound.mp3" loop></audio>
+
     <!-- Header -->
     <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
         <div class="flex items-center gap-3">
@@ -65,10 +68,8 @@
         <!-- Word Selection Section -->
         <div id="wordSelectSection" class="hidden w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-6 my-auto">
             <h2 id="wordSelectTitle" class="text-2xl font-bold text-emerald-400">Giliran Anda Menggambar!</h2>
-            <p id="wordSelectDesc" class="text-slate-300">Pilih salah satu kata benda di bawah ini untuk digambar:</p>
-            <div id="wordOptionsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-lg">
-                <!-- Pilihan kata / status tunggu -->
-            </div>
+            <p id="wordSelectDesc" class="text-slate-300">Pilih salah satu kata (Benda, Hewan, atau Buah) di bawah ini untuk digambar:</p>
+            <div id="wordOptionsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-lg"></div>
         </div>
 
         <!-- Gameplay Section -->
@@ -97,7 +98,7 @@
                         <button onclick="setColor('#f59e0b', this)" class="color-btn w-7 h-7 rounded-full bg-amber-500" data-color="#f59e0b"></button>
                         <button onclick="setColor('#8b5cf6', this)" class="color-btn w-7 h-7 rounded-full bg-purple-500" data-color="#8b5cf6"></button>
                         <button onclick="setColor('#ffffff', this)" class="color-btn w-7 h-7 rounded-full bg-white border border-slate-600 flex items-center justify-center text-xs text-slate-800" data-color="#ffffff" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
-                        <button onclick="floodFillAction()" class="w-7 h-7 rounded-full bg-emerald-600 border border-slate-500 flex items-center justify-center text-xs text-white" title="Cat Tumpah"><i class="fa-solid fa-fill-drip"></i></button>
+                        <button id="fillToolBtn" onclick="toggleFillTool()" class="w-7 h-7 rounded-full bg-emerald-600 border border-slate-500 flex items-center justify-center text-xs text-white" title="Alat Cat Tumpah"><i class="fa-solid fa-fill-drip"></i></button>
                         <input type="color" id="customColor" value="#000000" onchange="setColor(this.value, null)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
                     </div>
                     <div class="flex items-center gap-2">
@@ -121,7 +122,7 @@
                 </div>
 
                 <div id="guesserInputBox" class="mt-4 pt-3 border-t border-slate-700">
-                    <p id="clueText" class="text-xs text-amber-400 mb-2 font-semibold">Tebak Nama Benda apa yang di gambar</p>
+                    <p id="clueText" class="text-xs text-amber-400 mb-2 font-semibold">Tebak Nama Benda, Hewan, atau Buah</p>
                     <div class="flex gap-2">
                         <input type="text" id="guessInput" placeholder="Ketik tebakanmu..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
                         <button onclick="submitGuessAction()" class="bg-emerald-600 hover:bg-emerald-500 px-4 py-2 rounded-xl font-bold text-sm text-white">Kirim</button>
@@ -136,7 +137,11 @@
     <script>
         const MY_NAME = "Muhammad Dede Imran";
         const ROOM_ID = "tebak_gambar_nadilla_dede_room_2026";
-        const WORD_LIST = ["Meja", "Kursi", "Lemari", "Pintu", "Jendela", "Kasur", "Bantal", "Jam dinding", "Televisi", "Komputer", "Laptop", "Buku", "Sepatu", "Topi", "Payung", "Sepeda", "Mobil", "Bola"];
+        const WORD_LIST = [
+            "Meja", "Kursi", "Lemari", "Pintu", "Jendela", "Kasur", "Bantal", "Guling", "Selimut", "Sprei", "Jam dinding", "Jam tangan", "Cermin", "Kaca", "Lampu", "Kipas angin", "AC", "Televisi", "Radio", "Speaker", "Komputer", "Laptop", "Keyboard", "Mouse", "Monitor", "Printer", "HP", "Charger", "Kabel", "Baterai", "Senter", "Kamera", "Tripod", "Mikrofon", "Headset", "Earphone", "Buku", "Pensil", "Pulpen", "Penghapus", "Penggaris", "Rautan", "Spidol", "Krayon", "Buku gambar", "Tas", "Dompet", "Sepatu", "Sandal", "Kaos kaki", "Topi", "Jaket", "Baju", "Celana", "Rok", "Kemeja", "Dasi", "Ikat pinggang", "Kacamata", "Payung", "Jas hujan", "Helm", "Masker", "Sisir", "Sikat gigi", "Pasta gigi", "Sabun", "Sampo", "Handuk", "Gayung", "Ember", "Baskom", "Sapu", "Pel", "Kain lap", "Tempat sampah", "Setrika", "Mesin cuci", "Kulkas", "Kompor", "Oven", "Blender", "Mixer", "Rice cooker", "Panci", "Wajan", "Spatula", "Pisau", "Sendok", "Garpu", "Piring", "Mangkuk", "Gelas", "Cangkir", "Teko", "Termos", "Botol", "Talenan", "Serbet", "Tudung saji", "Rak", "Karpet", "Gorden", "Vas bunga", "Pot", "Tanaman hias", "Bingkai foto", "Patung", "Lukisan", "Tangga", "Palu", "Obeng", "Tang", "Gergaji", "Paku", "Baut", "Sekrup", "Meteran", "Cangkul", "Sekop", "Sabit", "Arit", "Parang", "Kapak", "Gembok", "Kunci", "Rantai", "Tali", "Selang", "Keran", "Pipa", "Batu bata", "Semen", "Pasir", "Kayu", "Kawat", "Besi", "Kertas", "Kardus", "Plastik", "Karet", "Koin", "Uang kertas", "Kartu", "Kalender", "Peta", "Globe", "Bendera", "Lilin", "Korek api", "Korek gas", "Kipas", "Layang-layang", "Bola", "Raket", "Bet tenis meja", "Shuttlecock", "Sepeda", "Motor", "Mobil", "Bus", "Truk", "Kereta", "Pesawat", "Helikopter", "Kapal", "Perahu", "Becak", "Gerobak", "Skuter", "Skateboard", "Koper", "Karung", "Keranjang", "Peti", "Payung taman", "Tenda", "Kompas", "Teropong", "Mikroskop", "Termometer", "Timbangan", "Kalkulator", "Stetoskop", "Obat", "Plester", "Kursi roda", "Tongkat",
+            "Kucing", "Anjing", "Kelinci", "Hamster", "Marmut", "Tikus", "Tupai", "Landak", "Kuda", "Sapi", "Kerbau", "Kambing", "Domba", "Babi", "Rusa", "Kijang", "Kancil", "Gajah", "Jerapah", "Zebra", "Kuda nil", "Badak", "Unta", "Keledai", "Monyet", "Orangutan", "Simpanse", "Gorila", "Lutung", "Bekantan", "Beruang", "Panda", "Koala", "Kanguru", "Harimau", "Singa", "Macan tutul", "Cheetah", "Serigala", "Rubah", "Hyena", "Musang", "Luwak", "Berang-berang", "Anjing laut", "Singa laut", "Walrus", "Paus", "Lumba-lumba", "Orca", "Hiu", "Pari", "Ikan mas", "Ikan lele", "Ikan nila", "Ikan gurami", "Ikan patin", "Ikan mujair", "Ikan tuna", "Ikan salmon", "Ikan kakap", "Ikan kerapu", "Ikan bandeng", "Ikan gurita", "Ikan badut", "Ikan cupang", "Ikan koi", "Ikan arwana", "Kuda laut", "Belut", "Sidat", "Buntal", "Pari manta", "Penyu", "Kura-kura", "Buaya", "Komodo", "Biawak", "Iguana", "Bunglon", "Cicak", "Tokek", "Kadal", "Ular", "Piton", "Kobra", "Sanca", "Katak", "Kodok", "Salamander", "Axolotl", "Burung merpati", "Elang", "Rajawali", "Garuda", "Merpati", "Gagak", "Kakatua", "Beo", "Nuri", "Kenari", "Murai", "Jalak", "Cendrawasih", "Merak", "Kasuari", "Maleo", "Ayam", "Bebek", "Angsa", "Burung unta", "Penguin", "Flamingo", "Bangau", "Kuntul", "Pelikan", "Camar", "Walet", "Burung hantu", "Pipit", "Gereja", "Perkutut", "Tekukur", "Puyuh", "Kalkun", "Burung dara", "Ayam kalkun", "Kupu-kupu", "Ngengat", "Lebah", "Tawon", "Semut", "Rayap", "Nyamuk", "Lalat", "Capung", "Belalang", "Jangkrik", "Kecoak", "Kumbang", "Kepik", "Kunang-kunang", "Kutu", "Kutu daun", "Tonggeret", "Laba-laba", "Kalajengking", "Kelabang", "Kaki seribu", "Udang", "Lobster", "Kepiting", "Rajungan", "Cumi-cumi", "Gurita", "Sotong", "Kerang", "Tiram", "Siput", "Bekicot", "Lintah", "Cacing tanah", "Ulat", "Bintang laut", "Bulu babi", "Teripang", "Spons laut", "Ubur-ubur", "Anemon laut", "Karang",
+            "Apel", "Jeruk", "Jeruk nipis", "Jeruk lemon", "Jeruk bali", "Jeruk mandarin", "Mangga", "Mangga harum manis", "Mangga manalagi", "Pisang", "Pisang ambon", "Pisang raja", "Pisang kepok", "Pisang tanduk", "Pepaya", "Nanas", "Semangka", "Melon", "Blewah", "Timun suri", "Anggur", "Stroberi", "Blueberry", "Blackberry", "Raspberry", "Cranberry", "Ceri", "Persik", "Plum", "Aprikot", "Pir", "Kiwi", "Alpukat", "Jambu biji", "Jambu air", "Jambu kristal", "Jambu bol", "Rambutan", "Durian", "Manggis", "Duku", "Langsat", "Kelengkeng", "Leci", "Sawo", "Sirsak", "Srikaya", "Nangka", "Cempedak", "Kedondong", "Belimbing", "Belimbing wuluh", "Markisa", "Delima", "Kurma", "Tin", "Zaitun", "Kelapa", "Salak", "Pala", "Asam jawa", "Asam kandis", "Kawista", "Kecapi", "Jamblang", "Duwet", "Kesemek", "Matoa", "Mundu", "Bisbul", "Gandaria", "Kemang", "Bacang", "Namnam", "Cermai", "Kersen", "Buni", "Rotan", "Buah naga", "Buah ara", "Buah nona", "Buah merah", "Buah menteng", "Buah rukam", "Buah kepel", "Buah lobi-lobi", "Buah kecapi", "Buah lai", "Buah maja", "Buah berenuk", "Buah rukem", "Buah parijoto", "Buah safou", "Sukun", "Kluwih", "Lemon cui", "Jeruk kasturi", "Jeruk purut", "Jeruk keprok", "Yuzu", "Pomelo", "Grapefruit", "Kumquat", "Mandarin", "Nektarin", "Delima putih", "Delima merah", "Melon madu", "Blewah", "Pepino", "Feijoa", "Loquat", "Longan", "Mangga kweni", "Mangga golek", "Mangga gedong", "Pisang barangan", "Pisang uli", "Pisang mas", "Pisang ambon lumut"
+        ];
         
         let peer = null, conn = null;
         let isP1Ready = false, isP2Ready = false;
@@ -153,12 +158,24 @@
         };
         let canvas, ctx, drawing = false;
         let currentColor = "#000000", currentLineWidth = 6;
+        let isFillMode = false;
         let timerInterval = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             initCanvas();
             initPeer();
+            playMusicOnce();
         });
+
+        function playMusicOnce() {
+            const music = document.getElementById('bgMusic');
+            if (music) {
+                music.volume = 0.4;
+                music.play().catch(() => {
+                    document.body.addEventListener('click', () => { music.play(); }, { once: true });
+                });
+            }
+        }
 
         function initCanvas() {
             canvas = document.getElementById('paintCanvas');
@@ -166,12 +183,12 @@
             resizeCanvas();
             window.addEventListener('resize', resizeCanvas);
 
-            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousedown', handleCanvasClick);
+            canvas.addEventListener('touchstart', (e) => { handleCanvasClick(e.touches[0]); e.preventDefault(); }, {passive: false});
+
             canvas.addEventListener('mousemove', draw);
             canvas.addEventListener('mouseup', stopDraw);
             canvas.addEventListener('mouseleave', stopDraw);
-
-            canvas.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); e.preventDefault(); }, {passive: false});
             canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); }, {passive: false});
             canvas.addEventListener('touchend', stopDraw);
         }
@@ -216,9 +233,7 @@
         }
 
         function sendData(data) {
-            if (conn && conn.open) {
-                conn.send(data);
-            }
+            if (conn && conn.open) conn.send(data);
         }
 
         function handleIncomingData(data) {
@@ -288,7 +303,7 @@
                 document.getElementById('wordSelectSection').classList.remove('hidden');
                 if (gameState.currentArtist === MY_NAME) {
                     document.getElementById('wordSelectTitle').innerText = "Giliran Anda Menggambar!";
-                    document.getElementById('wordSelectDesc').innerText = "Pilih salah satu kata benda di bawah ini untuk digambar:";
+                    document.getElementById('wordSelectDesc').innerText = "Pilih salah satu kata (Benda, Hewan, atau Buah) di bawah ini untuk digambar:";
                     setupWordChoices();
                 } else {
                     document.getElementById('wordSelectTitle').innerText = `Menunggu ${gameState.currentArtist} Memilih Kata...`;
@@ -314,7 +329,7 @@
                 } else if (!isMyTurn && gameState.pendingGuess) {
                     guessBox.innerHTML = `<div class="text-amber-300 font-semibold text-sm">Tebakan: "${gameState.pendingGuess}"</div>`;
                 } else {
-                    guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">${isMyTurn ? 'Tunggu tebakan dari Nadilla...' : 'Ketik tebakan nama benda di bawah!'}</span>`;
+                    guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">${isMyTurn ? 'Tunggu tebakan dari Nadilla...' : 'Ketik tebakan nama benda, hewan, atau buah di bawah!'}</span>`;
                 }
             }
         }
@@ -352,15 +367,22 @@
             }, 1000);
         }
 
-        function startDraw(e) {
+        function handleCanvasClick(e) {
             if (gameState.currentArtist !== MY_NAME || gameState.status !== 'PLAYING') return;
-            drawing = true;
             const pos = getPos(e);
-            addStroke(pos.x, pos.y, false);
+
+            if (isFillMode) {
+                performFloodFill(Math.floor(pos.x * canvas.width), Math.floor(pos.y * canvas.height), currentColor);
+                isFillMode = false;
+                document.getElementById('fillToolBtn').classList.remove('ring-4', 'ring-amber-400');
+            } else {
+                drawing = true;
+                addStroke(pos.x, pos.y, false);
+            }
         }
 
         function draw(e) {
-            if (!drawing || gameState.currentArtist !== MY_NAME || gameState.status !== 'PLAYING') return;
+            if (!drawing || gameState.currentArtist !== MY_NAME || gameState.status !== 'PLAYING' || isFillMode) return;
             const pos = getPos(e);
             addStroke(pos.x, pos.y, true);
         }
@@ -391,8 +413,7 @@
 
         function drawSingleStroke(p, prevP) {
             if (p.type === 'fill') {
-                ctx.fillStyle = p.color;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                performFloodFill(Math.floor(p.startX * canvas.width), Math.floor(p.startY * canvas.height), p.color, false);
                 return;
             }
             ctx.strokeStyle = p.color;
@@ -418,6 +439,74 @@
             }
         }
 
+        window.toggleFillTool = function() {
+            if (gameState.currentArtist !== MY_NAME) return;
+            isFillMode = !isFillMode;
+            const btn = document.getElementById('fillToolBtn');
+            if (isFillMode) {
+                btn.classList.add('ring-4', 'ring-amber-400');
+            } else {
+                btn.classList.remove('ring-4', 'ring-amber-400');
+            }
+        };
+
+        function performFloodFill(startX, startY, fillColor, broadcast = true) {
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+            const targetColor = getPixelColor(data, startX, startY, canvas.width);
+            const replacementColor = hexToRgba(fillColor);
+
+            if (colorsMatch(targetColor, replacementColor)) return;
+
+            const queue = [[startX, startY]];
+            const visited = new Uint8Array(canvas.width * canvas.height);
+
+            while (queue.length > 0) {
+                const [x, y] = queue.pop();
+                if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) continue;
+                const idx = y * canvas.width + x;
+                if (visited[idx]) continue;
+                visited[idx] = 1;
+
+                const currColor = getPixelColor(data, x, y, canvas.width);
+                if (colorsMatch(currColor, targetColor)) {
+                    setPixelColor(data, x, y, canvas.width, replacementColor);
+                    queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+
+            if (broadcast) {
+                const stroke = { type: 'fill', startX: startX / canvas.width, startY: startY / canvas.height, color: fillColor };
+                gameState.canvasData.push(stroke);
+                sendData({ type: 'FLOOD_FILL', stroke: stroke });
+            }
+        }
+
+        function getPixelColor(data, x, y, width) {
+            const i = (y * width + x) * 4;
+            return [data[i], data[i+1], data[i+2], data[i+3]];
+        }
+
+        function setPixelColor(data, x, y, width, color) {
+            const i = (y * width + x) * 4;
+            data[i] = color[0];
+            data[i+1] = color[1];
+            data[i+2] = color[2];
+            data[i+3] = color[3];
+        }
+
+        function colorsMatch(a, b) {
+            return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+        }
+
+        function hexToRgba(hex) {
+            let c = hex.replace('#','');
+            if (c.length === 3) c = c.split('').map(x => x + x).join('');
+            const num = parseInt(c, 16);
+            return [num >> 16, (num >> 8) & 255, num & 255, 255];
+        }
+
         window.setColor = function(c, btn) {
             currentColor = c;
             document.querySelectorAll('.color-btn').forEach(b => {
@@ -436,14 +525,6 @@
                 clearCanvasScreen();
                 sendData({ type: 'CLEAR_CANVAS' });
             }
-        };
-
-        window.floodFillAction = function() {
-            if (gameState.currentArtist !== MY_NAME) return;
-            const stroke = { type: 'fill', color: currentColor };
-            gameState.canvasData.push(stroke);
-            redrawCanvas(gameState.canvasData);
-            sendData({ type: 'FLOOD_FILL', stroke: stroke });
         };
 
         window.submitGuessAction = function() {
