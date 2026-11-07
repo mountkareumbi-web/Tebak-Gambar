@@ -10,8 +10,8 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Audio Backsound -->
-    <audio id="bgMusic" src="backsound.mp3" loop></audio>
+    <!-- Audio Backsound Autoplay & Loop -->
+    <audio id="bgMusic" src="backsound.mp3" loop autoplay></audio>
 
     <!-- Header -->
     <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
@@ -152,8 +152,7 @@
             selectedWord: '', 
             timeLeft: 50, 
             canvasData: [], 
-            pendingGuess: '', 
-            revealedGuess: '',
+            lastGuessResult: null, 
             scores: { "Nadilla": 0, "Muhammad Dede Imran": 0 }
         };
         let canvas, ctx, drawing = false;
@@ -164,15 +163,21 @@
         window.addEventListener('DOMContentLoaded', () => {
             initCanvas();
             initPeer();
-            playMusicOnce();
+            setupAutoplayMusic();
         });
 
-        function playMusicOnce() {
+        function setupAutoplayMusic() {
             const music = document.getElementById('bgMusic');
             if (music) {
                 music.volume = 0.4;
                 music.play().catch(() => {
-                    document.body.addEventListener('click', () => { music.play(); }, { once: true });
+                    const handleFirstInteraction = () => {
+                        music.play();
+                        document.removeEventListener('click', handleFirstInteraction);
+                        document.removeEventListener('touchstart', handleFirstInteraction);
+                    };
+                    document.addEventListener('click', handleFirstInteraction);
+                    document.addEventListener('touchstart', handleFirstInteraction);
                 });
             }
         }
@@ -261,15 +266,10 @@
                 gameState.status = 'PLAYING';
                 syncStateToClient();
                 renderGameUI();
-                startTimer();
+                startServerTimer();
             } else if (data.type === 'STATE_SYNC') {
                 gameState = data.gameState;
                 renderGameUI();
-                if (gameState.status === 'PLAYING' && !timerInterval) {
-                    startTimer();
-                } else if (gameState.status !== 'PLAYING' && timerInterval) {
-                    clearInterval(timerInterval);
-                }
             }
         }
 
@@ -301,11 +301,11 @@
         }
 
         function startNewRoundSetup() {
+            if (timerInterval) clearInterval(timerInterval);
             gameState.status = 'SELECTING_WORD';
             gameState.canvasData = [];
             gameState.selectedWord = '';
-            gameState.pendingGuess = '';
-            gameState.revealedGuess = '';
+            gameState.lastGuessResult = null;
             gameState.timeLeft = 50;
 
             syncStateToClient();
@@ -350,10 +350,13 @@
                 redrawCanvas(gameState.canvasData);
 
                 const guessBox = document.getElementById('guessBox');
-                if (gameState.revealedGuess) {
-                    guessBox.innerHTML = `<div class="text-indigo-300 font-bold text-lg">"${gameState.revealedGuess}"</div><p class="text-xs text-slate-400 mt-2">Skor: N=${gameState.scores["Nadilla"]} | D=${gameState.scores["Muhammad Dede Imran"]}</p>`;
-                } else if (!isMyTurn && gameState.pendingGuess) {
-                    guessBox.innerHTML = `<div class="text-amber-300 font-semibold text-sm">Tebakan: "${gameState.pendingGuess}"</div>`;
+                if (gameState.lastGuessResult) {
+                    const iconColor = gameState.lastGuessResult.isCorrect ? 'text-emerald-400' : 'text-rose-400';
+                    const mark = gameState.lastGuessResult.isCorrect ? '✓' : '✗';
+                    guessBox.innerHTML = `
+                        <div class="font-bold text-base text-slate-200">Jawaban : "${gameState.lastGuessResult.guess}" <span class="${iconColor} text-lg font-black ml-1">${mark}</span></div>
+                        <p class="text-xs text-slate-400 mt-2">${gameState.lastGuessResult.msg}</p>
+                    `;
                 } else {
                     guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">${isMyTurn ? 'Tunggu tebakan dari Dede...' : 'Ketik tebakan nama benda, hewan, atau buah di bawah!'}</span>`;
                 }
@@ -380,50 +383,59 @@
             gameState.status = 'PLAYING';
             sendData({ type: 'WORD_SELECTED', word: word });
             renderGameUI();
-            startTimer();
+            startServerTimer();
         }
 
-        function startTimer() {
+        function startServerTimer() {
             if (timerInterval) clearInterval(timerInterval);
+            gameState.timeLeft = 50;
+
             timerInterval = setInterval(() => {
-                if (gameState.status !== 'PLAYING') return;
+                if (gameState.status !== 'PLAYING') {
+                    clearInterval(timerInterval);
+                    return;
+                }
 
                 if (gameState.timeLeft > 0) {
                     gameState.timeLeft--;
-                    document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
+                    syncStateToClient();
+                    renderGameUI();
                 } else {
-                    autoFinishRound("Waktu Habis! (+0 Poin)");
+                    clearInterval(timerInterval);
+                    autoFinishRound(`Waktu Habis! Jawaban: ${gameState.selectedWord}`, false);
                 }
             }, 1000);
         }
 
         function processGuess(guess) {
-            gameState.pendingGuess = guess;
+            if (gameState.status !== 'PLAYING') return;
             const guessClean = guess.trim().toLowerCase();
             const targetClean = gameState.selectedWord.trim().toLowerCase();
             const guesserName = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
 
             if (guessClean === targetClean) {
-                let addedPoint = gameState.timeLeft >= 25 ? 10 : 5;
+                let addedPoint = gameState.timeLeft >= 20 ? 10 : 5;
                 gameState.scores[guesserName] += addedPoint;
-                autoFinishRound(`${guesserName} BENAR! (+${addedPoint} Poin) Jawab: ${gameState.selectedWord}`);
+                autoFinishRound(`${guesserName} BENAR! (+${addedPoint} Poin)`, true, guess);
             } else {
-                gameState.revealedGuess = `${guesserName} menebak "${guess}" (Salah: +0 Poin)`;
+                gameState.lastGuessResult = {
+                    guess: guess,
+                    isCorrect: false,
+                    msg: `${guesserName} salah menebak.`
+                };
+                syncStateToClient();
                 renderGameUI();
-                
-                setTimeout(() => {
-                    if (gameState.status === 'PLAYING') {
-                        gameState.pendingGuess = '';
-                        gameState.revealedGuess = '';
-                        renderGameUI();
-                    }
-                }, 2000);
             }
         }
 
-        function autoFinishRound(msg) {
+        function autoFinishRound(msg, isCorrect, guessWord = "") {
             if (timerInterval) clearInterval(timerInterval);
-            gameState.revealedGuess = msg;
+            gameState.lastGuessResult = {
+                guess: guessWord || gameState.selectedWord,
+                isCorrect: isCorrect,
+                msg: msg
+            };
+            syncStateToClient();
             renderGameUI();
 
             setTimeout(() => {
@@ -437,7 +449,7 @@
                     gameState.currentArtist = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
                     gameState.timeLeft = 50;
                     gameState.canvasData = [];
-                    gameState.pendingGuess = '';
+                    gameState.lastGuessResult = null;
                     gameState.selectedWord = '';
                     syncStateToClient();
                     renderGameUI();
@@ -608,7 +620,7 @@
         window.submitGuessAction = function() {
             const val = document.getElementById('guessInput').value.trim();
             if (!val) return;
-            sendData({ type: 'GUESS_SUBMIT', guess: val });
+            processGuess(val);
             document.getElementById('guessInput').value = '';
         };
     </script>
