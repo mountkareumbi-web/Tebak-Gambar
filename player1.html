@@ -22,6 +22,10 @@
         
         <div class="flex items-center gap-6">
             <div class="text-center">
+                <div class="text-xs text-slate-400 uppercase font-semibold">Skor (Nadilla / Dede)</div>
+                <div id="scoreText" class="text-lg font-black text-indigo-400">0 : 0</div>
+            </div>
+            <div class="text-center">
                 <div class="text-xs text-slate-400 uppercase font-semibold">Ronde</div>
                 <div id="roundText" class="text-xl font-black text-indigo-400">1 / 20</div>
             </div>
@@ -56,6 +60,15 @@
             </button>
         </div>
 
+        <!-- Word Selection Modal / Section -->
+        <div id="wordSelectSection" class="hidden w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-6 my-auto">
+            <h2 class="text-2xl font-bold text-indigo-400">Giliran Anda Menggambar!</h2>
+            <p class="text-slate-300">Pilih salah satu kata benda di bawah ini untuk digambar:</p>
+            <div id="wordOptionsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-lg">
+                <!-- Pilihan kata dimasukkan lewat JS -->
+            </div>
+        </div>
+
         <!-- Gameplay Section -->
         <div id="gameSection" class="hidden flex-1 flex flex-col md:flex-row gap-6 w-full">
             
@@ -75,7 +88,7 @@
                 <!-- Color Palette -->
                 <div id="drawingTools" class="mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="flex items-center gap-2">
-                        <button onclick="setColor('#000000', this)" class="color-btn w-7 h-7 rounded-full bg-black border border-slate-400 ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-900" data-color="#000000"></button>
+                        <button onclick="setColor('#000000', this)" class="color-btn w-7 h-7 rounded-full bg-black border border-slate-400 ring-4 ring-offset-2 ring-indigo-400 ring-offset-slate-900" data-color="#000000"></button>
                         <button onclick="setColor('#ef4444', this)" class="color-btn w-7 h-7 rounded-full bg-red-500" data-color="#ef4444"></button>
                         <button onclick="setColor('#3b82f6', this)" class="color-btn w-7 h-7 rounded-full bg-blue-500" data-color="#3b82f6"></button>
                         <button onclick="setColor('#10b981', this)" class="color-btn w-7 h-7 rounded-full bg-emerald-500" data-color="#10b981"></button>
@@ -97,23 +110,23 @@
             <div class="w-full md:w-80 bg-slate-800 border border-slate-700 rounded-3xl p-4 flex flex-col justify-between shadow-xl">
                 <div>
                     <h3 class="font-bold text-slate-300 mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-comments text-indigo-400"></i> Pesan Tebakan Dede
+                        <i class="fa-solid fa-comments text-indigo-400"></i> Papan Skor & Pesan
                     </h3>
 
                     <div id="artistActionBox" class="mb-4">
                         <button onclick="finishRoundAction()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg transition">
                             <i class="fa-solid fa-circle-check mr-1"></i> SELESAIKAN RONDE
                         </button>
-                        <p class="text-[11px] text-slate-400 mt-1 text-center">Tekan untuk mengungkap tebakan Dede.</p>
+                        <p class="text-[11px] text-slate-400 mt-1 text-center">Tekan untuk lanjut jika waktu habis/selesai.</p>
                     </div>
 
-                    <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-2xl p-4 min-h-[140px] flex items-center justify-center text-center">
+                    <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-2xl p-4 min-h-[140px] flex flex-col items-center justify-center text-center">
                         <span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>
                     </div>
                 </div>
 
                 <div id="guesserInputBox" class="mt-4 pt-3 border-t border-slate-700">
-                    <p class="text-xs text-slate-400 mb-2">Tebak gambaran Dede:</p>
+                    <p id="clueText" class="text-xs text-amber-400 mb-2 font-semibold">Tebak Nama Benda apa yang di gambar</p>
                     <div class="flex gap-2">
                         <input type="text" id="guessInput" placeholder="Ketik tebakanmu..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
                         <button onclick="submitGuessAction()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl font-bold text-sm text-white">Kirim</button>
@@ -128,10 +141,21 @@
     <script>
         const MY_NAME = "Nadilla";
         const ROOM_ID = "tebak_gambar_nadilla_dede_room_2026";
+        const WORD_LIST = ["Meja", "Kursi", "Lemari", "Pintu", "Jendela", "Kasur", "Bantal", "Jam dinding", "Televisi", "Komputer", "Laptop", "Buku", "Sepatu", "Topi", "Payung", "Sepeda", "Mobil", "Bola"];
         
         let peer = null, conn = null;
         let isP1Ready = false, isP2Ready = false;
-        let gameState = { status: 'LOBBY', currentRound: 1, currentArtist: '', timeLeft: 60, canvasData: [], pendingGuess: '', revealedGuess: '' };
+        let gameState = { 
+            status: 'LOBBY', 
+            currentRound: 1, 
+            currentArtist: '', 
+            selectedWord: '', 
+            timeLeft: 60, 
+            canvasData: [], 
+            pendingGuess: '', 
+            revealedGuess: '',
+            scores: { "Nadilla": 0, "Muhammad Dede Imran": 0 }
+        };
         let canvas, ctx, drawing = false;
         let currentColor = "#000000", currentLineWidth = 6;
         let timerInterval = null;
@@ -209,11 +233,10 @@
                 isP2Ready = data.p2Ready;
                 updateLobbyUI();
                 if (isP1Ready && isP2Ready && gameState.status === 'LOBBY') {
-                    startGame();
+                    startNewRoundSetup();
                 }
             } else if (data.type === 'GUESS_SUBMIT') {
-                gameState.pendingGuess = data.guess;
-                document.getElementById('guessBox').innerHTML = `<div class="text-amber-300 font-semibold text-sm">Tebakan masuk: "${data.guess}" (Menunggu konfirmasi selesai ronde)</div>`;
+                processGuess(data.guess);
             } else if (data.type === 'DRAW_STROKE') {
                 gameState.canvasData.push(data.stroke);
                 redrawCanvas(gameState.canvasData);
@@ -223,6 +246,12 @@
             } else if (data.type === 'FLOOD_FILL') {
                 gameState.canvasData.push(data.stroke);
                 redrawCanvas(gameState.canvasData);
+            } else if (data.type === 'WORD_SELECTED') {
+                gameState.selectedWord = data.word;
+                gameState.status = 'PLAYING';
+                syncStateToClient();
+                renderGameUI();
+                startTimer();
             } else if (data.type === 'FINISH_ROUND') {
                 gameState = data.gameState;
                 renderGameUI();
@@ -235,7 +264,7 @@
             sendData({ type: 'P1_READY_UPDATE', p1Ready: isP1Ready });
 
             if (isP1Ready && isP2Ready && gameState.status === 'LOBBY') {
-                startGame();
+                startNewRoundSetup();
             }
         };
 
@@ -259,18 +288,18 @@
             }
         }
 
-        function startGame() {
-            gameState.status = 'PLAYING';
-            gameState.currentRound = 1;
-            gameState.currentArtist = Math.random() < 0.5 ? "Nadilla" : "Muhammad Dede Imran";
-            gameState.timeLeft = 60;
+        function startNewRoundSetup() {
+            gameState.status = 'SELECTING_WORD';
+            gameState.currentArtist = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
+            if (!gameState.currentArtist) gameState.currentArtist = "Nadilla";
             gameState.canvasData = [];
+            gameState.selectedWord = '';
             gameState.pendingGuess = '';
             gameState.revealedGuess = '';
+            gameState.timeLeft = 60;
 
             syncStateToClient();
             renderGameUI();
-            startTimer();
         }
 
         function syncStateToClient() {
@@ -279,31 +308,68 @@
 
         function renderGameUI() {
             document.getElementById('lobbySection').classList.add('hidden');
-            document.getElementById('gameSection').classList.remove('hidden');
+            document.getElementById('wordSelectSection').classList.add('hidden');
+            document.getElementById('gameSection').classList.add('hidden');
 
-            setTimeout(resizeCanvas, 50);
-
+            document.getElementById('scoreText').innerText = `${gameState.scores["Nadilla"]} : ${gameState.scores["Muhammad Dede Imran"]}`;
             document.getElementById('roundText').innerText = `${gameState.currentRound} / 20`;
             document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
 
-            const isMyTurn = gameState.currentArtist === MY_NAME;
-            document.getElementById('canvasHeader').innerText = isMyTurn ? "Layar Gambarmu (Nadilla)" : `Gambaran Live ${gameState.currentArtist}...`;
+            if (gameState.status === 'SELECTING_WORD') {
+                if (gameState.currentArtist === MY_NAME) {
+                    document.getElementById('wordSelectSection').classList.remove('hidden');
+                    setupWordChoices();
+                } else {
+                    document.getElementById('wordSelectSection').classList.remove('hidden');
+                    document.getElementById('wordSelectSection').innerHTML = `<h2 class="text-2xl font-bold text-indigo-400">Menunggu ${gameState.currentArtist} Memilih Kata...</h2>`;
+                }
+            } else if (gameState.status === 'PLAYING' || gameState.status === 'GAMEOVER') {
+                document.getElementById('gameSection').classList.remove('hidden');
+                setTimeout(resizeCanvas, 50);
 
-            document.getElementById('drawingTools').style.display = isMyTurn ? 'flex' : 'none';
-            document.getElementById('clearBtn').style.display = isMyTurn ? 'block' : 'none';
-            document.getElementById('artistActionBox').style.display = isMyTurn ? 'block' : 'none';
-            document.getElementById('guesserInputBox').style.display = !isMyTurn ? 'block' : 'none';
+                const isMyTurn = gameState.currentArtist === MY_NAME;
+                document.getElementById('canvasHeader').innerText = isMyTurn ? `Layar Gambarmu (Kata: ${gameState.selectedWord})` : `Gambaran Live ${gameState.currentArtist}...`;
 
-            redrawCanvas(gameState.canvasData);
+                document.getElementById('drawingTools').style.display = isMyTurn ? 'flex' : 'none';
+                document.getElementById('clearBtn').style.display = isMyTurn ? 'block' : 'none';
+                document.getElementById('artistActionBox').style.display = isMyTurn ? 'block' : 'none';
+                document.getElementById('guesserInputBox').style.display = !isMyTurn ? 'block' : 'none';
 
-            const guessBox = document.getElementById('guessBox');
-            if (gameState.revealedGuess) {
-                guessBox.innerHTML = `<div class="text-indigo-300 font-bold text-lg">"${gameState.revealedGuess}"</div>`;
-            } else if (!isMyTurn && gameState.pendingGuess) {
-                guessBox.innerHTML = `<div class="text-amber-300 font-semibold text-sm">Tebakan: "${gameState.pendingGuess}"</div>`;
-            } else {
-                guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>`;
+                redrawCanvas(gameState.canvasData);
+
+                const guessBox = document.getElementById('guessBox');
+                if (gameState.revealedGuess) {
+                    guessBox.innerHTML = `<div class="text-indigo-300 font-bold text-lg">"${gameState.revealedGuess}"</div><p class="text-xs text-slate-400 mt-2">Skor: N=${gameState.scores["Nadilla"]} | D=${gameState.scores["Muhammad Dede Imran"]}</p>`;
+                } else if (!isMyTurn && gameState.pendingGuess) {
+                    guessBox.innerHTML = `<div class="text-amber-300 font-semibold text-sm">Tebakan: "${gameState.pendingGuess}"</div>`;
+                } else {
+                    guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">${isMyTurn ? 'Tunggu tebakan dari Dede...' : 'Ketik tebakan nama benda di bawah!'}</span>`;
+                }
             }
+        }
+
+        function setupWordChoices() {
+            const container = document.getElementById('wordOptionsContainer');
+            container.innerHTML = '';
+            // Ambil 4 kata random
+            const shuffled = [...WORD_LIST].sort(() => 0.5 - Math.random());
+            const choices = shuffled.slice(0, 4);
+
+            choices.forEach(word => {
+                const btn = document.createElement('button');
+                btn.className = "p-3 bg-slate-700 hover:bg-indigo-600 rounded-xl font-bold text-white transition";
+                btn.innerText = word;
+                btn.onclick = () => selectWord(word);
+                container.appendChild(btn);
+            });
+        }
+
+        window.selectWord = function(word) {
+            gameState.selectedWord = word;
+            gameState.status = 'PLAYING';
+            sendData({ type: 'WORD_SELECTED', word: word });
+            renderGameUI();
+            startTimer();
         }
 
         function startTimer() {
@@ -321,18 +387,41 @@
             }, 1000);
         }
 
+        function processGuess(guess) {
+            gameState.pendingGuess = guess;
+            const guessClean = guess.trim().toLowerCase();
+            const targetClean = gameState.selectedWord.trim().toLowerCase();
+
+            if (guessClean === targetClean) {
+                // Tentukan Poin berdasarkan waktu tersisa (waktu jalan 60s ke 0s -> sisa waktu > 30 artinya waktu terpakai < 30s)
+                // Berarti jika sisa waktu >= 30, berarti waktu menjawab < 30 detik -> +10 poin. Jika < 30, berarti > 30 detik -> +5 poin.
+                let addedPoint = gameState.timeLeft >= 30 ? 10 : 5;
+                const guesserName = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
+                gameState.scores[guesserName] += addedPoint;
+
+                gameState.revealedGuess = `${guesserName} BENAR! (+${addedPoint} Poin) Jawab: ${gameState.selectedWord}`;
+                finishRoundAction();
+            } else {
+                renderGameUI();
+            }
+        }
+
         window.finishRoundAction = function() {
-            gameState.revealedGuess = gameState.pendingGuess || "(Tidak ada tebakan)";
+            if (!gameState.revealedGuess) {
+                gameState.revealedGuess = `Waktu Habis! Jawabannya: ${gameState.selectedWord}`;
+            }
             gameState.currentRound++;
             
             if (gameState.currentRound > 20) {
                 gameState.status = 'GAMEOVER';
                 alert("Game Selesai! 20 Ronde Telah Berakhir.");
             } else {
+                gameState.status = 'SELECTING_WORD';
                 gameState.currentArtist = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
                 gameState.timeLeft = 60;
                 gameState.canvasData = [];
                 gameState.pendingGuess = '';
+                gameState.selectedWord = '';
             }
 
             sendData({ type: 'FINISH_ROUND', gameState: gameState });
@@ -340,14 +429,14 @@
         };
 
         function startDraw(e) {
-            if (gameState.currentArtist !== MY_NAME) return;
+            if (gameState.currentArtist !== MY_NAME || gameState.status !== 'PLAYING') return;
             drawing = true;
             const pos = getPos(e);
             addStroke(pos.x, pos.y, false);
         }
 
         function draw(e) {
-            if (!drawing || gameState.currentArtist !== MY_NAME) return;
+            if (!drawing || gameState.currentArtist !== MY_NAME || gameState.status !== 'PLAYING') return;
             const pos = getPos(e);
             addStroke(pos.x, pos.y, true);
         }
@@ -436,10 +525,8 @@
         window.submitGuessAction = function() {
             const val = document.getElementById('guessInput').value.trim();
             if (!val) return;
-            gameState.pendingGuess = val;
             sendData({ type: 'GUESS_SUBMIT', guess: val });
             document.getElementById('guessInput').value = '';
-            alert("Tebakan terkirim ke server!");
         };
     </script>
 </body>
