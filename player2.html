@@ -75,14 +75,15 @@
                 <!-- Color Palette -->
                 <div id="drawingTools" class="mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="flex items-center gap-2">
-                        <button onclick="setColor('#000000')" class="w-7 h-7 rounded-full bg-black border border-slate-400 ring-2 ring-emerald-400"></button>
-                        <button onclick="setColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500"></button>
-                        <button onclick="setColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500"></button>
-                        <button onclick="setColor('#10b981')" class="w-7 h-7 rounded-full bg-emerald-500"></button>
-                        <button onclick="setColor('#f59e0b')" class="w-7 h-7 rounded-full bg-amber-500"></button>
-                        <button onclick="setColor('#8b5cf6')" class="w-7 h-7 rounded-full bg-purple-500"></button>
-                        <button onclick="setColor('#ffffff')" class="w-7 h-7 rounded-full bg-white border border-slate-600 flex items-center justify-center text-xs text-slate-800" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
-                        <input type="color" id="customColor" value="#000000" onchange="setColor(this.value)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
+                        <button onclick="setColor('#000000', this)" class="color-btn w-7 h-7 rounded-full bg-black border border-slate-400 ring-2 ring-emerald-400 ring-offset-2 ring-offset-slate-900" data-color="#000000"></button>
+                        <button onclick="setColor('#ef4444', this)" class="color-btn w-7 h-7 rounded-full bg-red-500" data-color="#ef4444"></button>
+                        <button onclick="setColor('#3b82f6', this)" class="color-btn w-7 h-7 rounded-full bg-blue-500" data-color="#3b82f6"></button>
+                        <button onclick="setColor('#10b981', this)" class="color-btn w-7 h-7 rounded-full bg-emerald-500" data-color="#10b981"></button>
+                        <button onclick="setColor('#f59e0b', this)" class="color-btn w-7 h-7 rounded-full bg-amber-500" data-color="#f59e0b"></button>
+                        <button onclick="setColor('#8b5cf6', this)" class="color-btn w-7 h-7 rounded-full bg-purple-500" data-color="#8b5cf6"></button>
+                        <button onclick="setColor('#ffffff', this)" class="color-btn w-7 h-7 rounded-full bg-white border border-slate-600 flex items-center justify-center text-xs text-slate-800" data-color="#ffffff" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
+                        <button onclick="floodFillAction()" class="w-7 h-7 rounded-full bg-emerald-600 border border-slate-500 flex items-center justify-center text-xs text-white" title="Cat Tumpah"><i class="fa-solid fa-fill-drip"></i></button>
+                        <input type="color" id="customColor" value="#000000" onchange="setColor(this.value, null)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="setLineWidth(3)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Kecil</button>
@@ -216,6 +217,12 @@
             } else if (data.type === 'CLEAR_CANVAS') {
                 gameState.canvasData = [];
                 clearCanvasScreen();
+            } else if (data.type === 'FLOOD_FILL') {
+                gameState.canvasData.push(data.stroke);
+                redrawCanvas(gameState.canvasData);
+            } else if (data.type === 'FINISH_ROUND') {
+                gameState = data.gameState;
+                renderGameUI();
             }
         }
 
@@ -267,6 +274,8 @@
             const guessBox = document.getElementById('guessBox');
             if (gameState.revealedGuess) {
                 guessBox.innerHTML = `<div class="text-emerald-300 font-bold text-lg">"${gameState.revealedGuess}"</div>`;
+            } else if (!isMyTurn && gameState.pendingGuess) {
+                guessBox.innerHTML = `<div class="text-amber-300 font-semibold text-sm">Tebakan: "${gameState.pendingGuess}"</div>`;
             } else {
                 guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>`;
             }
@@ -298,7 +307,7 @@
         }
 
         function addStroke(x, y, dragging) {
-            const stroke = { x, y, dragging, color: currentColor, size: currentLineWidth };
+            const stroke = { type: 'path', x, y, dragging, color: currentColor, size: currentLineWidth };
             gameState.canvasData.push(stroke);
             drawSingleStroke(stroke, gameState.canvasData[gameState.canvasData.length - 2]);
             sendData({ type: 'DRAW_STROKE', stroke: stroke });
@@ -310,12 +319,17 @@
         }
 
         function drawSingleStroke(p, prevP) {
+            if (p.type === 'fill') {
+                ctx.fillStyle = p.color;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
             ctx.strokeStyle = p.color;
             ctx.lineWidth = p.size;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
             ctx.beginPath();
-            if (p.dragging && prevP) {
+            if (p.dragging && prevP && prevP.type !== 'fill') {
                 ctx.moveTo(prevP.x * canvas.width, prevP.y * canvas.height);
             } else {
                 ctx.moveTo(p.x * canvas.width - 0.5, p.y * canvas.height);
@@ -333,7 +347,16 @@
             }
         }
 
-        window.setColor = (c) => currentColor = c;
+        window.setColor = function(c, btn) {
+            currentColor = c;
+            document.querySelectorAll('.color-btn').forEach(b => {
+                b.classList.remove('ring-4', 'ring-offset-2', 'ring-indigo-400', 'ring-emerald-400', 'ring-offset-slate-900');
+            });
+            if (btn) {
+                btn.classList.add('ring-4', 'ring-offset-2', 'ring-emerald-400', 'ring-offset-slate-900');
+            }
+        };
+
         window.setLineWidth = (w) => currentLineWidth = w;
 
         window.clearCanvasAction = function() {
@@ -342,6 +365,33 @@
                 clearCanvasScreen();
                 sendData({ type: 'CLEAR_CANVAS' });
             }
+        };
+
+        window.floodFillAction = function() {
+            if (gameState.currentArtist !== MY_NAME) return;
+            const stroke = { type: 'fill', color: currentColor };
+            gameState.canvasData.push(stroke);
+            redrawCanvas(gameState.canvasData);
+            sendData({ type: 'FLOOD_FILL', stroke: stroke });
+        };
+
+        window.finishRoundAction = function() {
+            // Player 2 bisa menekan tombol ini jika gilirannya sebagai artist
+            gameState.revealedGuess = gameState.pendingGuess || "(Tidak ada tebakan)";
+            gameState.currentRound++;
+            
+            if (gameState.currentRound > 20) {
+                gameState.status = 'GAMEOVER';
+                alert("Game Selesai! 20 Ronde Telah Berakhir.");
+            } else {
+                gameState.currentArtist = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
+                gameState.timeLeft = 60;
+                gameState.canvasData = [];
+                gameState.pendingGuess = '';
+            }
+
+            sendData({ type: 'FINISH_ROUND', gameState: gameState });
+            renderGameUI();
         };
 
         window.submitGuessAction = function() {
