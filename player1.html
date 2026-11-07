@@ -36,7 +36,7 @@
             </div>
             <div class="text-center">
                 <div class="text-xs text-slate-400 uppercase font-semibold">Sisa Waktu</div>
-                <div id="timerText" class="text-xl font-black text-amber-400">01:00</div>
+                <div id="timerText" class="text-xl font-black text-amber-400">00:50</div>
             </div>
         </div>
     </header>
@@ -150,7 +150,7 @@
             currentRound: 1, 
             currentArtist: 'Nadilla', 
             selectedWord: '', 
-            timeLeft: 60, 
+            timeLeft: 50, 
             canvasData: [], 
             pendingGuess: '', 
             revealedGuess: '',
@@ -306,7 +306,7 @@
             gameState.selectedWord = '';
             gameState.pendingGuess = '';
             gameState.revealedGuess = '';
-            gameState.timeLeft = 60;
+            gameState.timeLeft = 50;
 
             syncStateToClient();
             renderGameUI();
@@ -404,7 +404,7 @@
             const guesserName = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
 
             if (guessClean === targetClean) {
-                let addedPoint = gameState.timeLeft >= 30 ? 10 : 5;
+                let addedPoint = gameState.timeLeft >= 25 ? 10 : 5;
                 gameState.scores[guesserName] += addedPoint;
                 autoFinishRound(`${guesserName} BENAR! (+${addedPoint} Poin) Jawab: ${gameState.selectedWord}`);
             } else {
@@ -435,7 +435,7 @@
                 } else {
                     gameState.status = 'SELECTING_WORD';
                     gameState.currentArtist = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
-                    gameState.timeLeft = 60;
+                    gameState.timeLeft = 50;
                     gameState.canvasData = [];
                     gameState.pendingGuess = '';
                     gameState.selectedWord = '';
