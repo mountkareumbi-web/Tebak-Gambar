@@ -3,38 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tebak Gambar Multiplayer</title>
+    <title>Pilih Profil - Tebak Gambar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col items-center justify-center p-4">
 
-    <div class="max-w-md w-full bg-slate-800 rounded-3xl p-8 border border-slate-700 shadow-2xl text-center space-y-6">
-        <div class="inline-block p-4 bg-indigo-500/10 rounded-2xl text-indigo-400 mb-2">
-            <i class="fa-solid fa-gamepad text-5xl"></i>
-        </div>
-        <h1 class="text-3xl font-extrabold text-indigo-400">Tebak Gambar Live</h1>
-        <p class="text-slate-400 text-sm">Pilih profil pemain pada device ini untuk memulai:</p>
+    <div class="max-w-md w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 shadow-2xl text-center space-y-6">
+        <h1 class="text-2xl font-black text-indigo-400">Tebak Gambar Live</h1>
+        <p class="text-slate-300 text-sm">Pilih profil pemain pada device ini untuk memulai:</p>
 
-        <div class="space-y-4 pt-4">
-            <a href="player1.html" class="w-full flex items-center justify-between p-4 bg-slate-700 hover:bg-indigo-600 transition duration-200 rounded-2xl font-bold text-lg group shadow-lg">
-                <span class="flex items-center gap-3">
-                    <i class="fa-solid fa-user-ninja text-indigo-400 group-hover:text-white text-2xl"></i>
-                    <span>Nadilla</span>
-                </span>
-                <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-white"></i>
+        <div class="grid grid-cols-1 gap-4 mt-4">
+            <!-- Profil Nadilla -->
+            <a href="player1.html" class="flex items-center gap-4 p-4 bg-slate-700/50 hover:bg-indigo-600/30 border border-slate-600 hover:border-indigo-500 rounded-2xl transition group text-left">
+                <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-indigo-400 flex-shrink-0 bg-indigo-600 shadow-md">
+                    <img src="player1.png" alt="Nadilla" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg text-indigo-300 group-hover:text-white">Nadilla</h2>
+                    <p class="text-xs text-slate-400 group-hover:text-slate-200">Masuk sebagai Player 1 (Host Room)</p>
+                </div>
             </a>
 
-            <a href="player2.html" class="w-full flex items-center justify-between p-4 bg-slate-700 hover:bg-emerald-600 transition duration-200 rounded-2xl font-bold text-lg group shadow-lg">
-                <span class="flex items-center gap-3">
-                    <i class="fa-solid fa-user-astronaut text-emerald-400 group-hover:text-white text-2xl"></i>
-                    <span>Muhammad Dede Imran</span>
-                </span>
-                <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-white"></i>
+            <!-- Profil Dede -->
+            <a href="player2.html" class="flex items-center gap-4 p-4 bg-slate-700/50 hover:bg-emerald-600/30 border border-slate-600 hover:border-emerald-500 rounded-2xl transition group text-left">
+                <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-400 flex-shrink-0 bg-emerald-600 shadow-md">
+                    <img src="player2.png" alt="Muhammad Dede Imran" class="w-full h-full object-cover">
+                </div>
+                <div>
+                    <h2 class="font-bold text-lg text-emerald-300 group-hover:text-white">Muhammad Dede Imran</h2>
+                    <p class="text-xs text-slate-400 group-hover:text-slate-200">Masuk sebagai Player 2</p>
+                </div>
             </a>
         </div>
-        
-        <p class="text-xs text-slate-500 pt-4">Buka masing-masing link profil pada 2 HP/device berbeda.</p>
     </div>
 
 </body>
