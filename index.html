@@ -10,7 +10,7 @@
 <body class="bg-slate-900 text-slate-100 font-sans h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
 
     <!-- Audio Backsound -->
-    <audio id="bgMusic" src="backsound.mp3" loop autoplay></audio>
+    <audio id="bgMusic" src="backsound.mp3" loop preload="auto"></audio>
 
     <div class="max-w-md w-full bg-slate-800 border border-slate-700 rounded-2xl p-6 shadow-2xl text-center space-y-4">
         <h1 class="text-xl font-black text-indigo-400">Tebak Gambar Live</h1>
@@ -42,14 +42,18 @@
     </div>
 
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
+        function playAudio() {
             const music = document.getElementById('bgMusic');
             if (music) {
                 music.volume = 0.5;
-                music.play().catch(() => {
-                    document.body.addEventListener('click', () => { music.play(); }, { once: true });
-                });
+                music.play().catch(() => {});
             }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            playAudio();
+            document.addEventListener('click', playAudio, { once: true });
+            document.addEventListener('touchstart', playAudio, { once: true });
         });
     </script>
 </body>
