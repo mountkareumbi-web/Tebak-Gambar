@@ -2,130 +2,122 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Nadilla - Tebak Gambar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+<body class="bg-slate-900 text-slate-100 font-sans h-screen flex flex-col justify-between overflow-hidden">
 
     <!-- Audio Backsound Autoplay & Loop -->
     <audio id="bgMusic" src="backsound.mp3" loop autoplay></audio>
 
-    <!-- Header -->
-    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full overflow-hidden bg-indigo-600 border-2 border-indigo-400 shadow-md flex items-center justify-center">
+    <!-- Header Ringkas -->
+    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 px-4 py-2 flex items-center justify-between z-50 flex-shrink-0">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-full overflow-hidden bg-indigo-600 border border-indigo-400 shadow-md flex items-center justify-center">
                 <img src="player1.png" alt="Nadilla" class="w-full h-full object-cover">
             </div>
             <div>
-                <h1 class="font-bold text-lg leading-tight text-indigo-300">Nadilla (Player 1)</h1>
-                <p id="roleBadge" class="text-xs text-slate-400">Status Sync: <span id="connStatus" class="text-amber-400 font-bold">Menghubungkan...</span></p>
+                <h1 class="font-bold text-xs leading-tight text-indigo-300">Nadilla (P1)</h1>
+                <p class="text-[10px] text-slate-400"><span id="connStatus" class="text-amber-400 font-bold">Menghubungkan...</span></p>
             </div>
         </div>
         
-        <div class="flex items-center gap-6">
-            <div class="text-center">
-                <div class="text-xs text-slate-400 uppercase font-semibold">Skor (Nadilla / Dede)</div>
-                <div id="scoreText" class="text-lg font-black text-indigo-400">0 : 0</div>
+        <div class="flex items-center gap-4 text-center">
+            <div>
+                <div class="text-[9px] text-slate-400 uppercase font-semibold">Skor</div>
+                <div id="scoreText" class="text-xs font-black text-indigo-400">0 : 0</div>
             </div>
-            <div class="text-center">
-                <div class="text-xs text-slate-400 uppercase font-semibold">Ronde</div>
-                <div id="roundText" class="text-xl font-black text-indigo-400">1 / 20</div>
+            <div>
+                <div class="text-[9px] text-slate-400 uppercase font-semibold">Ronde</div>
+                <div id="roundText" class="text-xs font-black text-indigo-400">1/20</div>
             </div>
-            <div class="text-center">
-                <div class="text-xs text-slate-400 uppercase font-semibold">Sisa Waktu</div>
-                <div id="timerText" class="text-xl font-black text-amber-400">00:50</div>
+            <div>
+                <div class="text-[9px] text-slate-400 uppercase font-semibold">Waktu</div>
+                <div id="timerText" class="text-xs font-black text-amber-400">00:50</div>
             </div>
         </div>
     </header>
 
-    <!-- Main Body -->
-    <main class="flex-1 max-w-6xl w-full mx-auto p-4 flex flex-col md:flex-row gap-6">
+    <!-- Main Body Compact (Tanpa Scroll) -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-2 flex flex-col gap-2 overflow-hidden">
         
         <!-- Lobby Ready -->
-        <div id="lobbySection" class="w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-6 my-auto">
-            <h2 class="text-2xl font-bold text-indigo-400">Ruang Tunggu Real-Time</h2>
-            <p class="text-slate-300 max-w-md">Buka link <code class="bg-slate-900 px-2 py-1 rounded text-emerald-400">player2.html</code> di HP Muhammad Dede Imran.</p>
+        <div id="lobbySection" class="w-full h-full bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 my-auto">
+            <h2 class="text-xl font-bold text-indigo-400">Ruang Tunggu Real-Time</h2>
+            <p class="text-slate-300 text-xs">Buka link <code class="bg-slate-900 px-2 py-1 rounded text-emerald-400">player2.html</code> di HP Dede.</p>
             
-            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md">
-                <div class="p-4 bg-slate-700/50 rounded-2xl flex-1 border border-slate-600">
-                    <div class="text-xs text-slate-400">Nadilla (Anda)</div>
+            <div class="flex gap-3 w-full justify-center max-w-sm">
+                <div class="p-3 bg-slate-700/50 rounded-xl flex-1 border border-slate-600 text-xs">
+                    <div class="text-[10px] text-slate-400">Nadilla</div>
                     <div id="p1StatusText" class="font-bold text-amber-400">Belum Siap</div>
                 </div>
-                <div class="p-4 bg-slate-700/50 rounded-2xl flex-1 border border-slate-600">
-                    <div class="text-xs text-slate-400">Muhammad Dede Imran</div>
+                <div class="p-3 bg-slate-700/50 rounded-xl flex-1 border border-slate-600 text-xs">
+                    <div class="text-[10px] text-slate-400">Dede</div>
                     <div id="p2StatusText" class="font-bold text-amber-400">Belum Siap</div>
                 </div>
             </div>
 
-            <button id="readyBtn" onclick="toggleReady()" class="w-full max-w-md py-4 rounded-2xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xl">
+            <button id="readyBtn" onclick="toggleReady()" class="w-full max-w-sm py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg">
                 SAYA SIAP
             </button>
         </div>
 
         <!-- Word Selection Section -->
-        <div id="wordSelectSection" class="hidden w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-6 my-auto">
-            <h2 id="wordSelectTitle" class="text-2xl font-bold text-indigo-400">Giliran Anda Menggambar!</h2>
-            <p id="wordSelectDesc" class="text-slate-300">Pilih salah satu kata (Benda, Hewan, atau Buah) di bawah ini untuk digambar:</p>
-            <div id="wordOptionsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full max-w-lg"></div>
+        <div id="wordSelectSection" class="hidden w-full h-full bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 my-auto">
+            <h2 id="wordSelectTitle" class="text-xl font-bold text-indigo-400">Giliran Anda Menggambar!</h2>
+            <p id="wordSelectDesc" class="text-slate-300 text-xs">Pilih salah satu kata di bawah ini:</p>
+            <div id="wordOptionsContainer" class="grid grid-cols-2 gap-2 w-full max-w-sm"></div>
         </div>
 
-        <!-- Gameplay Section -->
-        <div id="gameSection" class="hidden flex-1 flex flex-col md:flex-row gap-6 w-full">
+        <!-- Gameplay Section (Persegi Panjang & Muat di Layar HP) -->
+        <div id="gameSection" class="hidden flex-1 flex flex-col gap-2 w-full overflow-hidden">
             
-            <!-- Canvas area -->
-            <div class="flex-1 bg-slate-800 border border-slate-700 rounded-3xl p-4 flex flex-col shadow-xl">
-                <div class="flex justify-between items-center mb-3 px-2">
-                    <span id="canvasHeader" class="text-sm font-semibold text-slate-300">Layar Gambar</span>
-                    <button id="clearBtn" onclick="clearCanvasAction()" class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg hover:bg-rose-500/30 transition">
-                        <i class="fa-solid fa-trash mr-1"></i> Hapus Gambar
+            <!-- Canvas Area (Dibuat Persegi Panjang / Tipis ke Atas) -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-2 flex flex-col shadow-md flex-1">
+                <div class="flex justify-between items-center px-1 mb-1">
+                    <span id="canvasHeader" class="text-xs font-semibold text-slate-300">Layar Gambar</span>
+                    <button id="clearBtn" onclick="clearCanvasAction()" class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded hover:bg-rose-500/30 transition">
+                        <i class="fa-solid fa-trash mr-1"></i> Hapus
                     </button>
                 </div>
 
-                <div id="canvasContainer" class="relative flex-1 bg-white rounded-2xl overflow-hidden border border-slate-700 min-h-[350px]">
+                <!-- Kontainer Kanvas Landscape / Persegi Panjang -->
+                <div id="canvasContainer" class="relative w-full bg-white rounded-xl overflow-hidden border border-slate-700 flex-1 min-h-[160px] max-h-[220px]">
                     <canvas id="paintCanvas" class="w-full h-full cursor-crosshair touch-none absolute inset-0"></canvas>
                 </div>
 
-                <!-- Color Palette -->
-                <div id="drawingTools" class="mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
-                    <div class="flex items-center gap-2">
-                        <button onclick="setColor('#000000', this)" class="color-btn w-7 h-7 rounded-full bg-black border border-slate-400 ring-4 ring-offset-2 ring-indigo-400 ring-offset-slate-900" data-color="#000000"></button>
-                        <button onclick="setColor('#ef4444', this)" class="color-btn w-7 h-7 rounded-full bg-red-500" data-color="#ef4444"></button>
-                        <button onclick="setColor('#3b82f6', this)" class="color-btn w-7 h-7 rounded-full bg-blue-500" data-color="#3b82f6"></button>
-                        <button onclick="setColor('#10b981', this)" class="color-btn w-7 h-7 rounded-full bg-emerald-500" data-color="#10b981"></button>
-                        <button onclick="setColor('#f59e0b', this)" class="color-btn w-7 h-7 rounded-full bg-amber-500" data-color="#f59e0b"></button>
-                        <button onclick="setColor('#8b5cf6', this)" class="color-btn w-7 h-7 rounded-full bg-purple-500" data-color="#8b5cf6"></button>
-                        <button onclick="setColor('#ffffff', this)" class="color-btn w-7 h-7 rounded-full bg-white border border-slate-600 flex items-center justify-center text-xs text-slate-800" data-color="#ffffff" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
-                        <button id="fillToolBtn" onclick="toggleFillTool()" class="w-7 h-7 rounded-full bg-indigo-600 border border-slate-500 flex items-center justify-center text-xs text-white" title="Alat Cat Tumpah"><i class="fa-solid fa-fill-drip"></i></button>
-                        <input type="color" id="customColor" value="#000000" onchange="setColor(this.value, null)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
+                <!-- Color & Tools Compact -->
+                <div id="drawingTools" class="mt-1.5 flex flex-wrap items-center justify-between gap-1 bg-slate-900/60 p-1.5 rounded-xl border border-slate-700/50">
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="setColor('#000000', this)" class="color-btn w-5 h-5 rounded-full bg-black border border-slate-400 ring-2 ring-indigo-400" data-color="#000000"></button>
+                        <button onclick="setColor('#ef4444', this)" class="color-btn w-5 h-5 rounded-full bg-red-500" data-color="#ef4444"></button>
+                        <button onclick="setColor('#3b82f6', this)" class="color-btn w-5 h-5 rounded-full bg-blue-500" data-color="#3b82f6"></button>
+                        <button onclick="setColor('#10b981', this)" class="color-btn w-5 h-5 rounded-full bg-emerald-500" data-color="#10b981"></button>
+                        <button onclick="setColor('#f59e0b', this)" class="color-btn w-5 h-5 rounded-full bg-amber-500" data-color="#f59e0b"></button>
+                        <button onclick="setColor('#ffffff', this)" class="color-btn w-5 h-5 rounded-full bg-white border border-slate-600 flex items-center justify-center text-[10px] text-slate-800" data-color="#ffffff" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
+                        <button id="fillToolBtn" onclick="toggleFillTool()" class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] text-white" title="Cat Tumpah"><i class="fa-solid fa-fill-drip"></i></button>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="setLineWidth(3)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Kecil</button>
-                        <button onclick="setLineWidth(6)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Sedang</button>
-                        <button onclick="setLineWidth(12)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Besar</button>
+                    <div class="flex items-center gap-1">
+                        <button onclick="setLineWidth(3)" class="px-2 py-0.5 bg-slate-700 text-[10px] rounded font-bold">Kecil</button>
+                        <button onclick="setLineWidth(6)" class="px-2 py-0.5 bg-slate-700 text-[10px] rounded font-bold">Sedang</button>
+                        <button onclick="setLineWidth(10)" class="px-2 py-0.5 bg-slate-700 text-[10px] rounded font-bold">Besar</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Chat & Guess Box -->
-            <div class="w-full md:w-80 bg-slate-800 border border-slate-700 rounded-3xl p-4 flex flex-col justify-between shadow-xl">
-                <div>
-                    <h3 class="font-bold text-slate-300 mb-3 flex items-center gap-2">
-                        <i class="fa-solid fa-comments text-indigo-400"></i> Papan Skor & Pesan
-                    </h3>
-
-                    <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-2xl p-4 min-h-[140px] flex flex-col items-center justify-center text-center">
-                        <span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>
-                    </div>
+            <!-- Panel Status & Kolom Tebakan (Selalu Tampak di Bawah Tanpa Scroll) -->
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-2.5 flex flex-col justify-between shadow-md flex-shrink-0">
+                <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-xl p-2 text-center text-xs min-h-[40px] flex items-center justify-center">
+                    <span class="text-slate-500 italic">Menunggu permainan...</span>
                 </div>
 
-                <div id="guesserInputBox" class="mt-4 pt-3 border-t border-slate-700">
-                    <p id="clueText" class="text-xs text-amber-400 mb-2 font-semibold">Tebak Nama Benda, Hewan, atau Buah</p>
-                    <div class="flex gap-2">
-                        <input type="text" id="guessInput" placeholder="Ketik tebakanmu..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
-                        <button onclick="submitGuessAction()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl font-bold text-sm text-white">Kirim</button>
+                <div id="guesserInputBox" class="mt-2 pt-1 border-t border-slate-700">
+                    <div class="flex gap-1.5">
+                        <input type="text" id="guessInput" placeholder="Ketik tebakan di sini..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500">
+                        <button onclick="submitGuessAction()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl font-bold text-xs text-white">Kirim</button>
                     </div>
                 </div>
             </div>
@@ -138,9 +130,9 @@
         const MY_NAME = "Nadilla";
         const ROOM_ID = "tebak_gambar_nadilla_dede_room_2026";
         const WORD_LIST = [
-            "Meja", "Kursi", "Lemari", "Pintu", "Jendela", "Kasur", "Bantal", "Guling", "Selimut", "Sprei", "Jam dinding", "Jam tangan", "Cermin", "Kaca", "Lampu", "Kipas angin", "AC", "Televisi", "Radio", "Speaker", "Komputer", "Laptop", "Keyboard", "Mouse", "Monitor", "Printer", "HP", "Charger", "Kabel", "Baterai", "Senter", "Kamera", "Tripod", "Mikrofon", "Headset", "Earphone", "Buku", "Pensil", "Pulpen", "Penghapus", "Penggaris", "Rautan", "Spidol", "Krayon", "Buku gambar", "Tas", "Dompet", "Sepatu", "Sandal", "Kaos kaki", "Topi", "Jaket", "Baju", "Celana", "Rok", "Kemeja", "Dasi", "Ikat pinggang", "Kacamata", "Payung", "Jas hujan", "Helm", "Masker", "Sisir", "Sikat gigi", "Pasta gigi", "Sabun", "Sampo", "Handuk", "Gayung", "Ember", "Baskom", "Sapu", "Pel", "Kain lap", "Tempat sampah", "Setrika", "Mesin cuci", "Kulkas", "Kompor", "Oven", "Blender", "Mixer", "Rice cooker", "Panci", "Wajan", "Spatula", "Pisau", "Sendok", "Garpu", "Piring", "Mangkuk", "Gelas", "Cangkir", "Teko", "Termos", "Botol", "Talenan", "Serbet", "Tudung saji", "Rak", "Karpet", "Gorden", "Vas bunga", "Pot", "Tanaman hias", "Bingkai foto", "Patung", "Lukisan", "Tangga", "Palu", "Obeng", "Tang", "Gergaji", "Paku", "Baut", "Sekrup", "Meteran", "Cangkul", "Sekop", "Sabit", "Arit", "Parang", "Kapak", "Gembok", "Kunci", "Rantai", "Tali", "Selang", "Keran", "Pipa", "Batu bata", "Semen", "Pasir", "Kayu", "Kawat", "Besi", "Kertas", "Kardus", "Plastik", "Karet", "Koin", "Uang kertas", "Kartu", "Kalender", "Peta", "Globe", "Bendera", "Lilin", "Korek api", "Korek gas", "Kipas", "Layang-layang", "Bola", "Raket", "Bet tenis meja", "Shuttlecock", "Sepeda", "Motor", "Mobil", "Bus", "Truk", "Kereta", "Pesawat", "Helikopter", "Kapal", "Perahu", "Becak", "Gerobak", "Skuter", "Skateboard", "Koper", "Karung", "Keranjang", "Peti", "Payung taman", "Tenda", "Kompas", "Teropong", "Mikroskop", "Termometer", "Timbangan", "Kalkulator", "Stetoskop", "Obat", "Plester", "Kursi roda", "Tongkat",
-            "Kucing", "Anjing", "Kelinci", "Hamster", "Marmut", "Tikus", "Tupai", "Landak", "Kuda", "Sapi", "Kerbau", "Kambing", "Domba", "Babi", "Rusa", "Kijang", "Kancil", "Gajah", "Jerapah", "Zebra", "Kuda nil", "Badak", "Unta", "Keledai", "Monyet", "Orangutan", "Simpanse", "Gorila", "Lutung", "Bekantan", "Beruang", "Panda", "Koala", "Kanguru", "Harimau", "Singa", "Macan tutul", "Cheetah", "Serigala", "Rubah", "Hyena", "Musang", "Luwak", "Berang-berang", "Anjing laut", "Singa laut", "Walrus", "Paus", "Lumba-lumba", "Orca", "Hiu", "Pari", "Ikan mas", "Ikan lele", "Ikan nila", "Ikan gurami", "Ikan patin", "Ikan mujair", "Ikan tuna", "Ikan salmon", "Ikan kakap", "Ikan kerapu", "Ikan bandeng", "Ikan gurita", "Ikan badut", "Ikan cupang", "Ikan koi", "Ikan arwana", "Kuda laut", "Belut", "Sidat", "Buntal", "Pari manta", "Penyu", "Kura-kura", "Buaya", "Komodo", "Biawak", "Iguana", "Bunglon", "Cicak", "Tokek", "Kadal", "Ular", "Piton", "Kobra", "Sanca", "Katak", "Kodok", "Salamander", "Axolotl", "Burung merpati", "Elang", "Rajawali", "Garuda", "Merpati", "Gagak", "Kakatua", "Beo", "Nuri", "Kenari", "Murai", "Jalak", "Cendrawasih", "Merak", "Kasuari", "Maleo", "Ayam", "Bebek", "Angsa", "Burung unta", "Penguin", "Flamingo", "Bangau", "Kuntul", "Pelikan", "Camar", "Walet", "Burung hantu", "Pipit", "Gereja", "Perkutut", "Tekukur", "Puyuh", "Kalkun", "Burung dara", "Ayam kalkun", "Kupu-kupu", "Ngengat", "Lebah", "Tawon", "Semut", "Rayap", "Nyamuk", "Lalat", "Capung", "Belalang", "Jangkrik", "Kecoak", "Kumbang", "Kepik", "Kunang-kunang", "Kutu", "Kutu daun", "Tonggeret", "Laba-laba", "Kalajengking", "Kelabang", "Kaki seribu", "Udang", "Lobster", "Kepiting", "Rajungan", "Cumi-cumi", "Gurita", "Sotong", "Kerang", "Tiram", "Siput", "Bekicot", "Lintah", "Cacing tanah", "Ulat", "Bintang laut", "Bulu babi", "Teripang", "Spons laut", "Ubur-ubur", "Anemon laut", "Karang",
-            "Apel", "Jeruk", "Jeruk nipis", "Jeruk lemon", "Jeruk bali", "Jeruk mandarin", "Mangga", "Mangga harum manis", "Mangga manalagi", "Pisang", "Pisang ambon", "Pisang raja", "Pisang kepok", "Pisang tanduk", "Pepaya", "Nanas", "Semangka", "Melon", "Blewah", "Timun suri", "Anggur", "Stroberi", "Blueberry", "Blackberry", "Raspberry", "Cranberry", "Ceri", "Persik", "Plum", "Aprikot", "Pir", "Kiwi", "Alpukat", "Jambu biji", "Jambu air", "Jambu kristal", "Jambu bol", "Rambutan", "Durian", "Manggis", "Duku", "Langsat", "Kelengkeng", "Leci", "Sawo", "Sirsak", "Srikaya", "Nangka", "Cempedak", "Kedondong", "Belimbing", "Belimbing wuluh", "Markisa", "Delima", "Kurma", "Tin", "Zaitun", "Kelapa", "Salak", "Pala", "Asam jawa", "Asam kandis", "Kawista", "Kecapi", "Jamblang", "Duwet", "Kesemek", "Matoa", "Mundu", "Bisbul", "Gandaria", "Kemang", "Bacang", "Namnam", "Cermai", "Kersen", "Buni", "Rotan", "Buah naga", "Buah ara", "Buah nona", "Buah merah", "Buah menteng", "Buah rukam", "Buah kepel", "Buah lobi-lobi", "Buah kecapi", "Buah lai", "Buah maja", "Buah berenuk", "Buah rukem", "Buah parijoto", "Buah safou", "Sukun", "Kluwih", "Lemon cui", "Jeruk kasturi", "Jeruk purut", "Jeruk keprok", "Yuzu", "Pomelo", "Grapefruit", "Kumquat", "Mandarin", "Nektarin", "Delima putih", "Delima merah", "Melon madu", "Blewah", "Pepino", "Feijoa", "Loquat", "Longan", "Mangga kweni", "Mangga golek", "Mangga gedong", "Pisang barangan", "Pisang uli", "Pisang mas", "Pisang ambon lumut"
+            "Meja", "Kursi", "Lemari", "Pintu", "Jendela", "Kasur", "Bantal", "Guling", "Selimut", "Jam", "Lampu", "AC", "Televisi", "Radio", "Komputer", "Laptop", "Mouse", "Printer", "HP", "Kamera", "Buku", "Pensil", "Pulpen", "Penghapus", "Tas", "Sepatu", "Topi", "Jaket", "Baju", "Celana", "Kacamata", "Payung", "Helm", "Masker", "Sabun", "Handuk", "Sapu", "Kulkas", "Kompor", "Panci", "Wajan", "Pisau", "Sendok", "Garpu", "Piring", "Gelas", "Teko", "Botol",
+            "Kucing", "Anjing", "Kelinci", "Hamster", "Kuda", "Sapi", "Kambing", "Domba", "Gajah", "Jerapah", "Zebra", "Monyet", "Beruang", "Panda", "Koala", "Kanguru", "Harimau", "Singa", "Paus", "Lumba", "Hiu", "Ikan", "Bebek", "Angsa", "Penguin", "Flamingo", "Ayam", "Burung", "Ular", "Katak", "Kupu", "Lebah", "Semut", "Nyamuk", "Lalat", "Kepiting", "Cumi", "Siput",
+            "Apel", "Jeruk", "Mangga", "Pisang", "Pepaya", "Nanas", "Semangka", "Melon", "Anggur", "Stroberi", "Ceri", "Pir", "Kiwi", "Alpukat", "Jambu", "Rambutan", "Durian", "Manggis", "Kelengkeng", "Leci", "Sawo", "Sirsak", "Nangka", "Belimbing", "Delima", "Kurma", "Kelapa", "Salak", "Pala", "Naga"
         ];
         
         let peer = null, conn = null;
@@ -211,7 +203,6 @@
 
             peer.on('open', (id) => {
                 document.getElementById('connStatus').innerText = "Menunggu Dede...";
-                document.getElementById('connStatus').className = "text-amber-400 font-bold";
             });
 
             peer.on('connection', (connection) => {
@@ -234,7 +225,7 @@
             });
 
             conn.on('close', () => {
-                document.getElementById('connStatus').innerText = "Dede Terputus";
+                document.getElementById('connStatus').innerText = "Terputus";
                 document.getElementById('connStatus').className = "text-rose-400 font-bold";
             });
         }
@@ -292,11 +283,11 @@
 
             const btn = document.getElementById('readyBtn');
             if (isP1Ready) {
-                btn.innerText = isP2Ready ? "MEMULAI PERMAINAN..." : "MENUNGGU DEDE SIAP...";
-                btn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-slate-700 text-slate-400 cursor-not-allowed";
+                btn.innerText = isP2Ready ? "MEMULAI..." : "MENUNGGU DEDE...";
+                btn.className = "w-full max-w-sm py-3 rounded-xl font-bold text-sm bg-slate-700 text-slate-400 cursor-not-allowed";
             } else {
                 btn.innerText = "SAYA SIAP";
-                btn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xl";
+                btn.className = "w-full max-w-sm py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg";
             }
         }
 
@@ -322,26 +313,26 @@
             document.getElementById('gameSection').classList.add('hidden');
 
             document.getElementById('scoreText').innerText = `${gameState.scores["Nadilla"]} : ${gameState.scores["Muhammad Dede Imran"]}`;
-            document.getElementById('roundText').innerText = `${gameState.currentRound} / 20`;
+            document.getElementById('roundText').innerText = `${gameState.currentRound}/20`;
             document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
 
             if (gameState.status === 'SELECTING_WORD') {
                 document.getElementById('wordSelectSection').classList.remove('hidden');
                 if (gameState.currentArtist === MY_NAME) {
                     document.getElementById('wordSelectTitle').innerText = "Giliran Anda Menggambar!";
-                    document.getElementById('wordSelectDesc').innerText = "Pilih salah satu kata (Benda, Hewan, atau Buah) di bawah ini untuk digambar:";
+                    document.getElementById('wordSelectDesc').innerText = "Pilih salah satu kata di bawah ini:";
                     setupWordChoices();
                 } else {
-                    document.getElementById('wordSelectTitle').innerText = `Menunggu ${gameState.currentArtist} Memilih Kata...`;
-                    document.getElementById('wordSelectDesc').innerText = "Silakan bersiap untuk menebak gambar.";
-                    document.getElementById('wordOptionsContainer').innerHTML = `<p class="col-span-4 text-slate-400 italic">Sedang memilih...</p>`;
+                    document.getElementById('wordSelectTitle').innerText = `Menunggu ${gameState.currentArtist}...`;
+                    document.getElementById('wordSelectDesc').innerText = "Sedang memilih kata untuk digambar.";
+                    document.getElementById('wordOptionsContainer').innerHTML = `<p class="col-span-2 text-slate-400 italic text-xs">Mohon tunggu...</p>`;
                 }
             } else if (gameState.status === 'PLAYING' || gameState.status === 'GAMEOVER') {
                 document.getElementById('gameSection').classList.remove('hidden');
                 setTimeout(resizeCanvas, 50);
 
                 const isMyTurn = gameState.currentArtist === MY_NAME;
-                document.getElementById('canvasHeader').innerText = isMyTurn ? `Layar Gambarmu (Kata: ${gameState.selectedWord})` : `Gambaran Live ${gameState.currentArtist}...`;
+                document.getElementById('canvasHeader').innerText = isMyTurn ? `Gambarmu (Kata: ${gameState.selectedWord})` : `Live: ${gameState.currentArtist}`;
 
                 document.getElementById('drawingTools').style.display = isMyTurn ? 'flex' : 'none';
                 document.getElementById('clearBtn').style.display = isMyTurn ? 'block' : 'none';
@@ -354,11 +345,11 @@
                     const iconColor = gameState.lastGuessResult.isCorrect ? 'text-emerald-400' : 'text-rose-400';
                     const mark = gameState.lastGuessResult.isCorrect ? '✓' : '✗';
                     guessBox.innerHTML = `
-                        <div class="font-bold text-base text-slate-200">Jawaban : "${gameState.lastGuessResult.guess}" <span class="${iconColor} text-lg font-black ml-1">${mark}</span></div>
-                        <p class="text-xs text-slate-400 mt-2">${gameState.lastGuessResult.msg}</p>
+                        <div class="font-bold text-xs text-slate-200">Jawaban : "${gameState.lastGuessResult.guess}" <span class="${iconColor} text-base font-black ml-1">${mark}</span></div>
+                        <p class="text-[10px] text-slate-400 mt-0.5">${gameState.lastGuessResult.msg}</p>
                     `;
                 } else {
-                    guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">${isMyTurn ? 'Tunggu tebakan dari Dede...' : 'Ketik tebakan nama benda, hewan, atau buah di bawah!'}</span>`;
+                    guessBox.innerHTML = `<span class="text-slate-500 italic text-xs">${isMyTurn ? 'Menunggu tebakan Dede...' : 'Ketik tebakanmu di bawah!'}</span>`;
                 }
             }
         }
@@ -371,7 +362,7 @@
 
             choices.forEach(word => {
                 const btn = document.createElement('button');
-                btn.className = "p-3 bg-slate-700 hover:bg-indigo-600 rounded-xl font-bold text-white transition";
+                btn.className = "p-2.5 bg-slate-700 hover:bg-indigo-600 rounded-xl font-bold text-xs text-white transition";
                 btn.innerText = word;
                 btn.onclick = () => selectWord(word);
                 container.appendChild(btn);
@@ -402,7 +393,7 @@
                     renderGameUI();
                 } else {
                     clearInterval(timerInterval);
-                    autoFinishRound(`Waktu Habis! Jawaban: ${gameState.selectedWord}`, false);
+                    autoFinishRound(`Waktu Habis! Jawabannya: ${gameState.selectedWord}`, false);
                 }
             }, 1000);
         }
@@ -418,13 +409,8 @@
                 gameState.scores[guesserName] += addedPoint;
                 autoFinishRound(`${guesserName} BENAR! (+${addedPoint} Poin)`, true, guess);
             } else {
-                gameState.lastGuessResult = {
-                    guess: guess,
-                    isCorrect: false,
-                    msg: `${guesserName} salah menebak.`
-                };
-                syncStateToClient();
-                renderGameUI();
+                // JIKA SALAH, RONDE SELESAI DAN BERGANTI GILIRAN SEPERTI DIMINTA
+                autoFinishRound(`${guesserName} SALAH menebak. Jawabannya: ${gameState.selectedWord}`, false, guess);
             }
         }
 
@@ -454,7 +440,7 @@
                     syncStateToClient();
                     renderGameUI();
                 }
-            }, 3000);
+            }, 2500);
         }
 
         function handleCanvasClick(e) {
@@ -534,9 +520,9 @@
             isFillMode = !isFillMode;
             const btn = document.getElementById('fillToolBtn');
             if (isFillMode) {
-                btn.classList.add('ring-4', 'ring-amber-400');
+                btn.classList.add('ring-2', 'ring-amber-400');
             } else {
-                btn.classList.remove('ring-4', 'ring-amber-400');
+                btn.classList.remove('ring-2', 'ring-amber-400');
             }
         };
 
@@ -600,10 +586,10 @@
         window.setColor = function(c, btn) {
             currentColor = c;
             document.querySelectorAll('.color-btn').forEach(b => {
-                b.classList.remove('ring-4', 'ring-offset-2', 'ring-indigo-400', 'ring-emerald-400', 'ring-offset-slate-900');
+                b.classList.remove('ring-2', 'ring-indigo-400', 'ring-emerald-400');
             });
             if (btn) {
-                btn.classList.add('ring-4', 'ring-offset-2', 'ring-indigo-400', 'ring-offset-slate-900');
+                btn.classList.add('ring-2', 'ring-indigo-400');
             }
         };
 
@@ -620,7 +606,7 @@
         window.submitGuessAction = function() {
             const val = document.getElementById('guessInput').value.trim();
             if (!val) return;
-            processGuess(val);
+            sendData({ type: 'GUESS_SUBMIT', guess: val });
             document.getElementById('guessInput').value = '';
         };
     </script>
