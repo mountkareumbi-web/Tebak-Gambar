@@ -23,15 +23,15 @@
             width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: #1e293b;
             border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+            background: #475569;
             border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+            background: #64748b;
         }
     </style>
 </head>
@@ -46,7 +46,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg text-white leading-tight">Tebak Gambar Live</h1>
-                    <p class="text-xs text-slate-400">Mode Multiplayer 2 Player</p>
+                    <p class="text-xs text-slate-400">Mode 2 Peranti Real-Time</p>
                 </div>
             </div>
 
@@ -61,16 +61,17 @@
     <!-- Main Container -->
     <main class="max-w-6xl mx-auto w-full p-3 md:p-6 flex-grow flex flex-col justify-center">
 
-        <!-- 1. MODAL / SCREEN PILIH PEMAIN -->
-        <div id="playerSelectScreen" class="bg-slate-800 border border-slate-700/70 rounded-3xl p-6 md:p-10 max-w-lg mx-auto w-full shadow-2xl text-center">
+        <!-- 1. MODAL / LOBBY SCREEN (PILIH PROFIL & SISTEM READY) -->
+        <div id="lobbyScreen" class="bg-slate-800 border border-slate-700/70 rounded-3xl p-6 md:p-10 max-w-lg mx-auto w-full shadow-2xl text-center">
             <div class="w-16 h-16 bg-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">
-                <i class="fa-solid fa-users"></i>
+                <i class="fa-solid fa-gamepad"></i>
             </div>
-            <h2 class="text-2xl font-bold text-white mb-2">Pilih Profil Pemain</h2>
-            <p class="text-slate-400 text-sm mb-6">Silakan pilih nama Anda untuk masuk ke arena permainan 2 peranti (*device*).</p>
+            <h2 class="text-2xl font-bold text-white mb-2">Lobby Permainan</h2>
+            <p class="text-slate-400 text-sm mb-6">Pilih nama Anda di bawah ini, kemudian tekan tombol SIAP/MULAI untuk masuk ke pertandingan.</p>
 
-            <div class="grid grid-cols-1 gap-4 mb-6">
-                <button onclick="selectPlayer('Nadilla')" class="group relative flex items-center p-4 rounded-2xl border-2 border-slate-700 bg-slate-800/80 hover:border-indigo-500 hover:bg-slate-700/50 transition duration-200">
+            <!-- Selection Stage -->
+            <div id="selectPlayerStep" class="grid grid-cols-1 gap-4 mb-6">
+                <button onclick="selectPlayerRole('Nadilla')" class="group relative flex items-center p-4 rounded-2xl border-2 border-slate-700 bg-slate-800/80 hover:border-pink-500 hover:bg-slate-700/50 transition duration-200">
                     <div class="w-12 h-12 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-xl font-bold mr-4 group-hover:scale-110 transition">
                         N
                     </div>
@@ -81,7 +82,7 @@
                     <i class="fa-solid fa-chevron-right ml-auto text-slate-500 group-hover:text-pink-400"></i>
                 </button>
 
-                <button onclick="selectPlayer('Muhammad Dede Imran')" class="group relative flex items-center p-4 rounded-2xl border-2 border-slate-700 bg-slate-800/80 hover:border-indigo-500 hover:bg-slate-700/50 transition duration-200">
+                <button onclick="selectPlayerRole('Muhammad Dede Imran')" class="group relative flex items-center p-4 rounded-2xl border-2 border-slate-700 bg-slate-800/80 hover:border-blue-500 hover:bg-slate-700/50 transition duration-200">
                     <div class="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl font-bold mr-4 group-hover:scale-110 transition">
                         D
                     </div>
@@ -92,25 +93,44 @@
                     <i class="fa-solid fa-chevron-right ml-auto text-slate-500 group-hover:text-blue-400"></i>
                 </button>
             </div>
-            <p class="text-xs text-slate-500">Buka halaman ini di 2 peranti berbeda dan pilih pemain masing-masing.</p>
+
+            <!-- Ready / Waiting Stage -->
+            <div id="readyStep" class="hidden flex-col items-center gap-4">
+                <div class="w-full bg-slate-900/60 p-4 rounded-2xl border border-slate-700 flex flex-col gap-3">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-400">Nadilla:</span>
+                        <span id="readyStatusNadilla" class="font-bold text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>
+                    </div>
+                    <div class="border-t border-slate-800"></div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-slate-400">Muhammad Dede Imran:</span>
+                        <span id="readyStatusDede" class="font-bold text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>
+                    </div>
+                </div>
+
+                <button id="readyButton" onclick="toggleReady()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-lg rounded-2xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-check"></i> <span id="readyButtonText">SAYA SIAP</span>
+                </button>
+                <p id="waitingNotice" class="text-xs text-amber-400 italic">Menunggu pemain kedua menekan tombol...</p>
+            </div>
         </div>
 
-        <!-- 2. GAMEPLAY SCREEN (HIDDEN BY DEFAULT) -->
+        <!-- 2. GAMEPLAY SCREEN -->
         <div id="gameplayScreen" class="hidden flex-col gap-4">
 
             <!-- Top Dashboard Bar -->
             <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-                <!-- Info Giliran & Kesempatan -->
+                <!-- Info Ronde & Peran -->
                 <div class="flex items-center gap-4">
                     <div class="bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-700/50 text-center">
-                        <span class="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Ronde / Kesempatan</span>
+                        <span class="block text-[10px] uppercase font-bold tracking-wider text-slate-400">Kesempatan / Ronde</span>
                         <span id="roundCounterText" class="text-lg font-extrabold text-indigo-400">1 / 20</span>
                     </div>
 
                     <div>
                         <span class="text-xs text-slate-400 block">Status Peran:</span>
                         <span id="roleIndicator" class="font-bold text-base md:text-lg text-emerald-400 flex items-center gap-2">
-                            <i class="fa-solid fa-paint-brush"></i> Anda Sedang Menggambar
+                            -
                         </span>
                     </div>
                 </div>
@@ -123,44 +143,31 @@
                         <span id="timerText" class="text-2xl font-black text-amber-400 font-mono leading-none">60s</span>
                     </div>
                 </div>
-
-                <!-- Score Board -->
-                <div class="flex items-center gap-4 bg-slate-900/60 px-4 py-2 rounded-xl border border-slate-700/50">
-                    <div class="text-center">
-                        <span class="text-[10px] text-pink-400 font-bold block">Nadilla</span>
-                        <span id="scoreNadilla" class="text-lg font-bold text-white">0</span>
-                    </div>
-                    <div class="text-slate-600 font-bold">VS</div>
-                    <div class="text-center">
-                        <span class="text-[10px] text-blue-400 font-bold block">Dede</span>
-                        <span id="scoreDede" class="text-lg font-bold text-white">0</span>
-                    </div>
-                </div>
             </div>
 
-            <!-- Banner Pesan Notifikasi Giliran / Waktu Habis -->
-            <div id="statusBanner" class="hidden p-3 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 text-sm font-semibold text-center items-center justify-center gap-2">
-                <i class="fa-solid fa-circle-info"></i> <span id="statusBannerText">Waktu Ronde Habis! Giliran Berpindah.</span>
+            <!-- Banner Notifikasi Real-time -->
+            <div id="statusBanner" class="hidden p-3 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-300 text-sm font-semibold text-center items-center justify-center gap-2 animate-bounce">
+                <i class="fa-solid fa-circle-info"></i> <span id="statusBannerText">Status Pesan</span>
             </div>
 
-            <!-- Arena Utama Grid: Canvas + Sidebar Chat/Tebakan -->
+            <!-- Arena Utama Grid: Canvas + Sidebar Jawaban -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-                <!-- Canvas Section (Width 2 Cols in LG) -->
+                <!-- Canvas Section -->
                 <div class="lg:col-span-2 flex flex-col gap-3">
                     <div class="bg-slate-800 border border-slate-700 rounded-2xl p-3 md:p-4 shadow-xl flex flex-col items-center">
                         
-                        <!-- Tools Canvas (Hanya Aktif Jika Role Pelukis) -->
+                        <!-- Tools Canvas (Hanya Aktif untuk Pelukis) -->
                         <div id="drawingTools" class="w-full flex flex-wrap items-center justify-between gap-2 mb-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50">
                             <!-- Color Picker -->
                             <div class="flex items-center gap-1.5">
                                 <span class="text-xs text-slate-400 mr-1 hidden sm:inline">Warna:</span>
-                                <button onclick="setColor('#000000')" class="w-7 h-7 rounded-full bg-black border-2 border-white/40 focus:scale-110 transition"></button>
-                                <button onclick="setColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500 border-2 border-transparent hover:scale-105 transition"></button>
-                                <button onclick="setColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500 border-2 border-transparent hover:scale-105 transition"></button>
-                                <button onclick="setColor('#22c55e')" class="w-7 h-7 rounded-full bg-green-500 border-2 border-transparent hover:scale-105 transition"></button>
-                                <button onclick="setColor('#eab308')" class="w-7 h-7 rounded-full bg-yellow-500 border-2 border-transparent hover:scale-105 transition"></button>
-                                <button onclick="setColor('#a855f7')" class="w-7 h-7 rounded-full bg-purple-500 border-2 border-transparent hover:scale-105 transition"></button>
+                                <button onclick="setColor('#000000')" class="w-7 h-7 rounded-full bg-black border-2 border-white/40 hover:scale-110 transition"></button>
+                                <button onclick="setColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500 border-2 border-transparent hover:scale-110 transition"></button>
+                                <button onclick="setColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500 border-2 border-transparent hover:scale-110 transition"></button>
+                                <button onclick="setColor('#22c55e')" class="w-7 h-7 rounded-full bg-green-500 border-2 border-transparent hover:scale-110 transition"></button>
+                                <button onclick="setColor('#eab308')" class="w-7 h-7 rounded-full bg-yellow-500 border-2 border-transparent hover:scale-110 transition"></button>
+                                <button onclick="setColor('#a855f7')" class="w-7 h-7 rounded-full bg-purple-500 border-2 border-transparent hover:scale-110 transition"></button>
                                 <input type="color" id="customColorPicker" onchange="setColor(this.value)" class="w-7 h-7 rounded-full cursor-pointer bg-transparent border-0 p-0">
                             </div>
 
@@ -175,7 +182,7 @@
                             <!-- Eraser & Clear -->
                             <div class="flex items-center gap-2">
                                 <button id="eraserBtn" onclick="toggleEraser()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs rounded-lg font-semibold flex items-center gap-1">
-                                    <i class="fa-solid fa-eraser"></i> <span class="hidden sm:inline">Penghapus</span>
+                                    <i class="fa-solid fa-eraser"></i> <span class="hidden sm:inline">Hapus</span>
                                 </button>
                                 <button onclick="clearCanvas(true)" class="px-3 py-1.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs rounded-lg font-semibold border border-rose-500/30 flex items-center gap-1">
                                     <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline">Bersihkan</span>
@@ -197,42 +204,43 @@
                     </div>
                 </div>
 
-                <!-- Sidebar Box: Chat / Jawaban & Panel Kontrol Pelukis -->
+                <!-- Sidebar Box: Panel Jawaban & Kontrol Selesai -->
                 <div class="flex flex-col gap-4">
 
-                    <!-- Panel Khusus Pelukis: Tombol Selesaikan Ronde -->
+                    <!-- Panel Pelukis: Tombol Selesaikan Ronde -->
                     <div id="drawerControlPanel" class="hidden bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl flex-col gap-3">
                         <h3 class="font-bold text-sm text-indigo-400 flex items-center gap-2">
                             <i class="fa-solid fa-circle-check"></i> Kontrol Pelukis
                         </h3>
-                        <p class="text-xs text-slate-400">Tekan tombol di bawah ini untuk melihat tebakan terbaru dari lawan dan mengakhiri ronde ini.</p>
-                        <button onclick="finishRoundByDrawer()" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2 text-sm">
-                            <i class="fa-solid fa-check-double"></i> Selesaikan Ronde & Cek Jawaban
+                        <p class="text-xs text-slate-400">Tekan tombol di bawah ini jika tebakan lawan sudah benar atau ingin mengakhiri ronde ini.</p>
+                        <button onclick="finishRoundByDrawer()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-check-double"></i> Selesaikan Ronde
                         </button>
                     </div>
 
-                    <!-- Halaman Jawaban Terakhir yang Masuk (Terlihat Untuk Kedua Pemain) -->
-                    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl flex flex-col flex-grow min-h-[300px]">
+                    <!-- Panel Jawaban Terbuka (Tersambung Real-time) -->
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-xl flex flex-col flex-grow min-h-[320px]">
                         <h3 class="font-bold text-sm text-slate-200 mb-3 flex items-center justify-between border-b border-slate-700 pb-2">
-                            <span><i class="fa-solid fa-comments text-indigo-400 mr-2"></i>Pesan & Tebakan</span>
-                            <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">Real-time</span>
+                            <span><i class="fa-solid fa-envelope text-indigo-400 mr-2"></i>Pesan Tebakan</span>
+                            <span id="pendingBadge" class="hidden text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-full">Tebakan Diketik</span>
                         </h3>
 
-                        <!-- Chat Messages List -->
-                        <div id="chatBox" class="flex-grow overflow-y-auto custom-scrollbar space-y-3 pr-1 mb-3 max-h-[260px] min-h-[160px]">
-                            <div class="text-center py-4 text-slate-500 text-xs italic">
-                                Belum ada tebakan yang dikirim...
-                            </div>
+                        <!-- Container Pesan Terungkap -->
+                        <div id="revealedMessageContainer" class="flex-grow flex flex-col justify-center items-center p-4 bg-slate-900/60 rounded-xl border border-slate-700/60 text-center mb-3">
+                            <i class="fa-solid fa-comment-dots text-3xl text-slate-600 mb-2"></i>
+                            <p id="revealedMessageText" class="text-sm text-slate-400 italic">Pesan tebakan dari lawan akan muncul di sini saat Pelukis menekan "Selesaikan Ronde" atau saat waktu habis.</p>
                         </div>
 
                         <!-- Panel Input Jawaban (Khusus Penjawab) -->
-                        <div id="guesserInputPanel" class="mt-auto border-t border-slate-700/60 pt-3">
-                            <form onsubmit="submitGuess(event)" class="flex gap-2">
-                                <input type="text" id="guessInput" placeholder="Ketik tebakan Anda di sini..." class="flex-grow bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
-                                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center justify-center">
-                                    <i class="fa-solid fa-paper-plane"></i>
+                        <div id="guesserInputPanel" class="hidden flex-col gap-2 border-t border-slate-700/60 pt-3">
+                            <span class="text-xs text-slate-400">Ketik pesan / tebakan Anda:</span>
+                            <div class="flex gap-2">
+                                <input type="text" id="guessInput" placeholder="Ketik jawaban..." class="flex-grow bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                                <button onclick="savePendingGuess()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center justify-center gap-1">
+                                    <i class="fa-solid fa-paper-plane"></i> Simpan
                                 </button>
-                            </form>
+                            </div>
+                            <span id="guesserStatusNote" class="text-[11px] text-emerald-400 hidden"><i class="fa-solid fa-circle-check"></i> Tebakan tersimpan! Menunggu Pelukis menyelesaikan ronde.</span>
                         </div>
                     </div>
 
@@ -251,17 +259,8 @@
                 <h2 class="text-2xl font-black text-white mb-1">Permainan Selesai!</h2>
                 <p class="text-slate-400 text-xs mb-6">Seluruh 20 Ronde / Kesempatan telah diselesaikan.</p>
 
-                <!-- Winner Announcement -->
-                <div class="w-full bg-slate-900/80 rounded-2xl p-4 border border-slate-700 mb-6">
-                    <div id="winnerText" class="text-lg font-bold text-amber-400 mb-2">Pemenang: Nadilla 🎉</div>
-                    <div class="flex justify-around text-sm font-semibold border-t border-slate-800 pt-2 text-slate-300">
-                        <div>Nadilla: <span id="finalScoreNadilla" class="text-pink-400 font-bold">0</span></div>
-                        <div>Dede: <span id="finalScoreDede" class="text-blue-400 font-bold">0</span></div>
-                    </div>
-                </div>
-
-                <button onclick="resetGame()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition">
-                    <i class="fa-solid fa-rotate-right mr-2"></i> Main Lagi / Reset Game
+                <button onclick="resetWholeGame()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition">
+                    <i class="fa-solid fa-rotate-right mr-2"></i> Main Lagi / Kembali ke Lobby
                 </button>
             </div>
         </div>
@@ -279,8 +278,8 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Initialization Global Variable Context
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tebak-gambar-app-default';
+        // Firebase Context Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'tebak-gambar-app-v2';
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
             : { apiKey: "demo", authDomain: "demo.firebaseapp.com", projectId: "demo" };
@@ -289,41 +288,35 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // App Game State Variables
+        // App Game State
         let currentUserRole = ""; // 'Nadilla' atau 'Muhammad Dede Imran'
-        let currentUserId = null;
         let isDrawing = false;
         let currentBrushColor = "#000000";
         let currentLineWidth = 5;
         let isEraserActive = false;
 
-        // Document Reference Single Source of Truth
-        const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'mainSession');
+        const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'sessionState');
 
-        // Timer Interval Local Handle
         let timerInterval = null;
 
-        // HTML Canvas Element
+        // Canvas Context
         const canvas = document.getElementById('drawCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Setup Canvas Resolution & Resize Handler
         function resizeCanvas() {
             const rect = canvas.getBoundingClientRect();
-            // Simpan gambar sebelum resize
             const tempImage = ctx.getImageData(0, 0, canvas.width, canvas.height);
             canvas.width = rect.width;
             canvas.height = rect.height;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
-            // Kembalikan konteks gambar
             if (tempImage.width > 0 && tempImage.height > 0) {
                 ctx.putImageData(tempImage, 0, 0);
             }
         }
         window.addEventListener('resize', resizeCanvas);
 
-        // Authenticate Player First
+        // Authenticate User
         async function initAuth() {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -338,63 +331,151 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUserId = user.uid;
                 subscribeToGameState();
             }
         });
 
-        // Player Select Action
-        window.selectPlayer = async function(roleName) {
+        // 1. SELECT PLAYER ROLE IN LOBBY
+        window.selectPlayerRole = async function(roleName) {
             currentUserRole = roleName;
-            document.getElementById('playerSelectScreen').classList.add('hidden');
-            document.getElementById('gameplayScreen').classList.remove('hidden');
-            document.getElementById('gameplayScreen').classList.add('flex');
+            document.getElementById('selectPlayerStep').classList.add('hidden');
+            document.getElementById('readyStep').classList.remove('hidden');
+            document.getElementById('readyStep').classList.add('flex');
+            
             document.getElementById('userBadge').classList.remove('hidden');
             document.getElementById('userBadge').classList.add('flex');
             document.getElementById('currentRoleText').innerText = currentUserRole;
 
-            // Inisialisasi Game State di Firestore jika belum ada
             const docSnap = await getDoc(gameDocRef);
             if (!docSnap.exists()) {
                 await setDoc(gameDocRef, {
+                    readyNadilla: false,
+                    readyDede: false,
+                    status: 'LOBBY', // 'LOBBY', 'PLAYING', 'GAME_OVER'
                     round: 1,
-                    drawer: 'Nadilla', // Nadilla mulai duluan sebagai pelukis
-                    guesser: 'Muhammad Dede Imran',
+                    drawer: '',
+                    guesser: '',
                     timer: 60,
                     canvasData: '',
-                    lastGuess: '',
-                    scoreNadilla: 0,
-                    scoreDede: 0,
-                    status: 'PLAYING', // 'PLAYING', 'ROUND_FINISHED', 'GAME_OVER'
-                    messages: []
+                    pendingGuess: '',
+                    revealedGuess: ''
                 });
             }
-            resizeCanvas();
         };
 
-        // Realtime Subscription Listener (Firestore -> UI)
+        // 2. TOGGLE READY BUTTON LOGIC
+        window.toggleReady = async function() {
+            const docSnap = await getDoc(gameDocRef);
+            if (!docSnap.exists()) return;
+            const data = docSnap.data();
+
+            let isNadillaReady = data.readyNadilla || false;
+            let isDedeReady = data.readyDede || false;
+
+            if (currentUserRole === 'Nadilla') {
+                isNadillaReady = !isNadillaReady;
+            } else if (currentUserRole === 'Muhammad Dede Imran') {
+                isDedeReady = !isDedeReady;
+            }
+
+            // Jika Kedua Pemain Siap -> Mulai Permainan & ACAK Siapa Menggambar Pertama
+            if (isNadillaReady && isDedeReady) {
+                const players = ['Nadilla', 'Muhammad Dede Imran'];
+                const firstDrawer = players[Math.floor(Math.random() * players.length)];
+                const firstGuesser = (firstDrawer === 'Nadilla') ? 'Muhammad Dede Imran' : 'Nadilla';
+
+                await updateDoc(gameDocRef, {
+                    readyNadilla: true,
+                    readyDede: true,
+                    status: 'PLAYING',
+                    round: 1,
+                    drawer: firstDrawer,
+                    guesser: firstGuesser,
+                    timer: 60,
+                    canvasData: '',
+                    pendingGuess: '',
+                    revealedGuess: ''
+                });
+            } else {
+                // Update status ready biasa
+                await updateDoc(gameDocRef, {
+                    readyNadilla: isNadillaReady,
+                    readyDede: isDedeReady
+                });
+            }
+        };
+
+        // 3. LISTEN & SYNC GAME STATE REALTIME
         function subscribeToGameState() {
             onSnapshot(gameDocRef, (docSnap) => {
                 if (!docSnap.exists()) return;
                 const data = docSnap.data();
 
-                updateUI(data);
+                if (data.status === 'LOBBY') {
+                    renderLobbyUI(data);
+                } else if (data.status === 'PLAYING') {
+                    renderGameplayUI(data);
+                } else if (data.status === 'GAME_OVER') {
+                    showGameOver();
+                }
             }, (error) => {
                 console.error("Firestore Listen Error:", error);
             });
         }
 
-        // Render & Update Interface Function
-        function updateUI(data) {
+        // Render Lobby Ready UI Status
+        function renderLobbyUI(data) {
+            document.getElementById('lobbyScreen').classList.remove('hidden');
+            document.getElementById('gameplayScreen').classList.add('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+
+            const readyN = data.readyNadilla || false;
+            const readyD = data.readyDede || false;
+
+            // Status Badge Player 1
+            const nadillaEl = document.getElementById('readyStatusNadilla');
+            nadillaEl.innerHTML = readyN 
+                ? `<span class="text-emerald-400"><i class="fa-solid fa-circle-check"></i> SIAP</span>` 
+                : `<span class="text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>`;
+
+            // Status Badge Player 2
+            const dedeEl = document.getElementById('readyStatusDede');
+            dedeEl.innerHTML = readyD 
+                ? `<span class="text-emerald-400"><i class="fa-solid fa-circle-check"></i> SIAP</span>` 
+                : `<span class="text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>`;
+
+            // Update Tombol Sesuai Kondisi Lawan
+            const isSelfReady = (currentUserRole === 'Nadilla') ? readyN : readyD;
+            const isOpponentReady = (currentUserRole === 'Nadilla') ? readyD : readyN;
+
+            const btn = document.getElementById('readyButton');
+            const btnText = document.getElementById('readyButtonText');
+            const notice = document.getElementById('waitingNotice');
+
+            if (isSelfReady) {
+                btn.className = "w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-lg rounded-2xl shadow-lg transition flex items-center justify-center gap-2";
+                btnText.innerText = "BATAL SIAP";
+                notice.innerText = isOpponentReady ? "Kedua pemain siap! Memulai game..." : "Menunggu lawan menekan tombol SIAP / MULAI...";
+            } else {
+                btn.className = "w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-lg rounded-2xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2";
+                btnText.innerText = isOpponentReady ? "MULAI SEKARANG!" : "SAYA SIAP";
+                notice.innerText = isOpponentReady ? "Lawan sudah SIAP! Tekan 'MULAI SEKARANG!' untuk bermain." : "Tekan tombol di atas jika Anda sudah siap.";
+            }
+        }
+
+        // Render Gameplay UI Status
+        function renderGameplayUI(data) {
+            document.getElementById('lobbyScreen').classList.add('hidden');
+            document.getElementById('gameplayScreen').classList.remove('hidden');
+            document.getElementById('gameplayScreen').classList.add('flex');
+
             const isDrawer = (currentUserRole === data.drawer);
-            
-            // 1. Update Ronde & Skor
+
+            // Ronde & Timer
             document.getElementById('roundCounterText').innerText = `${data.round} / 20`;
-            document.getElementById('scoreNadilla').innerText = data.scoreNadilla || 0;
-            document.getElementById('scoreDede').innerText = data.scoreDede || 0;
             document.getElementById('timerText').innerText = `${data.timer}s`;
 
-            // 2. Status Peran Indicator
+            // Peran Indicator
             const roleIndicator = document.getElementById('roleIndicator');
             const canvasOverlay = document.getElementById('canvasOverlay');
             const drawerControlPanel = document.getElementById('drawerControlPanel');
@@ -402,23 +483,25 @@
             const drawingTools = document.getElementById('drawingTools');
 
             if (isDrawer) {
-                roleIndicator.innerHTML = `<i class="fa-solid fa-paint-brush text-emerald-400"></i> Giliran Anda Menggambar`;
+                roleIndicator.innerHTML = `<i class="fa-solid fa-paint-brush text-emerald-400"></i> Anda Sedang Menggambar`;
                 roleIndicator.className = "font-bold text-sm md:text-lg text-emerald-400 flex items-center gap-2";
                 canvasOverlay.classList.add('hidden');
                 drawerControlPanel.classList.remove('hidden');
                 drawerControlPanel.classList.add('flex');
                 guesserInputPanel.classList.add('hidden');
+                guesserInputPanel.classList.remove('flex');
                 drawingTools.classList.remove('opacity-40', 'pointer-events-none');
             } else {
-                roleIndicator.innerHTML = `<i class="fa-solid fa-lightbulb text-amber-400"></i> Giliran Anda Menebak (${data.drawer} Menggambar)`;
+                roleIndicator.innerHTML = `<i class="fa-solid fa-lightbulb text-amber-400"></i> Anda Menebak (${data.drawer} Menggambar)`;
                 roleIndicator.className = "font-bold text-sm md:text-lg text-amber-400 flex items-center gap-2";
                 canvasOverlay.classList.remove('hidden');
                 drawerControlPanel.classList.add('hidden');
                 guesserInputPanel.classList.remove('hidden');
+                guesserInputPanel.classList.add('flex');
                 drawingTools.classList.add('opacity-40', 'pointer-events-none');
             }
 
-            // 3. Render Canvas Gambar dari Server jika bukan pelukis
+            // Sync Gambar dari Pelukis ke Penjawab
             if (!isDrawer && data.canvasData) {
                 const img = new Image();
                 img.onload = () => {
@@ -430,37 +513,41 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
 
-            // 4. Render Chat / Messages History
-            const chatBox = document.getElementById('chatBox');
-            if (data.messages && data.messages.length > 0) {
-                chatBox.innerHTML = data.messages.map(msg => `
-                    <div class="flex flex-col ${msg.sender === currentUserRole ? 'items-end' : 'items-start'}">
-                        <span class="text-[10px] text-slate-400 mb-0.5">${msg.sender}</span>
-                        <div class="px-3 py-2 rounded-2xl text-sm ${msg.sender === currentUserRole ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-slate-700 text-slate-100 rounded-tl-none'} shadow">
-                            ${msg.text}
-                        </div>
-                    </div>
-                `).join('');
-                chatBox.scrollTop = chatBox.scrollHeight;
+            // Tampilkan Pesan Terungkap / Revealed
+            const revealedMsgBox = document.getElementById('revealedMessageContainer');
+            const pendingBadge = document.getElementById('pendingBadge');
+
+            if (data.revealedGuess) {
+                revealedMsgBox.innerHTML = `
+                    <span class="text-xs text-indigo-400 font-bold mb-1">${data.guesser} Menjawab:</span>
+                    <span class="text-lg font-black text-white bg-indigo-600/30 px-4 py-2 rounded-xl border border-indigo-500/40">${data.revealedGuess}</span>
+                `;
             } else {
-                chatBox.innerHTML = `<div class="text-center py-4 text-slate-500 text-xs italic">Belum ada tebakan yang dikirim...</div>`;
+                revealedMsgBox.innerHTML = `
+                    <i class="fa-solid fa-comment-dots text-3xl text-slate-600 mb-2"></i>
+                    <p class="text-sm text-slate-400 italic">Pesan tebakan dari lawan akan muncul di sini saat Pelukis menekan "Selesaikan Ronde" atau saat waktu habis.</p>
+                `;
             }
 
-            // 5. Handle Waktu / Timer sync (Hanya Pelukis yang mengendalikan jalannya interval timer untuk cegah double tick)
+            // Indikator jika ada tebakan terpending
+            if (data.pendingGuess && !data.revealedGuess) {
+                pendingBadge.classList.remove('hidden');
+            } else {
+                pendingBadge.classList.add('hidden');
+            }
+
+            // Host Timer Controller
             if (isDrawer && data.status === 'PLAYING') {
-                startTimerHost(data.timer, data.round);
+                startTimerHost(data.timer);
             } else {
                 stopTimerHost();
             }
 
-            // 6. Game Over Check
-            if (data.round > 20 || data.status === 'GAME_OVER') {
-                showGameOver(data);
-            }
+            resizeCanvas();
         }
 
-        // Host Timer Controller
-        function startTimerHost(currentSeconds, currentRound) {
+        // 4. TIMING SYSTEM CONTROL
+        function startTimerHost(currentSeconds) {
             if (timerInterval) return;
 
             timerInterval = setInterval(async () => {
@@ -468,10 +555,9 @@
                     currentSeconds--;
                     await updateDoc(gameDocRef, { timer: currentSeconds });
                 } else {
-                    // Waktu Habis -> Pindah Ronde Otomatis
                     stopTimerHost();
-                    showStatusBanner("Waktu ronde ini habis! Giliran berganti otomatis.");
-                    nextRound();
+                    showStatusBanner("Waktu 1 Menit Habis! Ronde Diselesaikan.");
+                    await autoFinishAndNextRound();
                 }
             }, 1000);
         }
@@ -483,39 +569,57 @@
             }
         }
 
-        // Action: Kirim Jawaban (Penjawab)
-        window.submitGuess = async function(e) {
-            e.preventDefault();
+        // Penjawab menyimpan tebakan (Pending)
+        window.savePendingGuess = async function() {
             const input = document.getElementById('guessInput');
             const text = input.value.trim();
             if (!text) return;
 
+            await updateDoc(gameDocRef, {
+                pendingGuess: text
+            });
+
+            document.getElementById('guesserStatusNote').classList.remove('hidden');
+            showStatusBanner("Tebakan tersimpan! Menunggu Pelukis mengakhiri ronde.");
+        };
+
+        // Pelukis menekan Selesaikan Ronde -> Buka Pesan & Pindah Ronde
+        window.finishRoundByDrawer = async function() {
             const docSnap = await getDoc(gameDocRef);
             if (!docSnap.exists()) return;
-
             const data = docSnap.data();
-            const newMessages = data.messages || [];
-            newMessages.push({
-                sender: currentUserRole,
-                text: text,
-                timestamp: Date.now()
-            });
 
+            // Pindahkan pendingGuess ke revealedGuess
+            const finalGuessText = data.pendingGuess || "(Tidak Ada Jawaban Diketik)";
+            
             await updateDoc(gameDocRef, {
-                messages: newMessages,
-                lastGuess: text
+                revealedGuess: finalGuessText
             });
 
-            input.value = '';
+            showStatusBanner(`Pesan Terbuka: "${finalGuessText}"`);
+            
+            // Beri jeda 2.5 detik agar pesan terbaca sebelum pindah ronde
+            setTimeout(async () => {
+                await nextRound();
+            }, 2500);
         };
 
-        // Action: Selesaikan Ronde oleh Pelukis
-        window.finishRoundByDrawer = async function() {
-            showStatusBanner("Pelukis telah menekan tombol Selesaikan Ronde!");
-            await nextRound();
-        };
+        async function autoFinishAndNextRound() {
+            const docSnap = await getDoc(gameDocRef);
+            if (!docSnap.exists()) return;
+            const data = docSnap.data();
 
-        // Switch Round Logic
+            const finalGuessText = data.pendingGuess || "(Waktu Habis - Tidak Ada Jawaban)";
+            await updateDoc(gameDocRef, {
+                revealedGuess: finalGuessText
+            });
+
+            setTimeout(async () => {
+                await nextRound();
+            }, 2500);
+        }
+
+        // Perpindahan Ronde
         async function nextRound() {
             stopTimerHost();
             const docSnap = await getDoc(gameDocRef);
@@ -525,20 +629,19 @@
             const nextRoundNum = data.round + 1;
 
             if (nextRoundNum > 20) {
-                // Game Selesai
                 await updateDoc(gameDocRef, {
-                    status: 'GAME_OVER',
-                    round: 21
+                    status: 'GAME_OVER'
                 });
                 return;
             }
 
-            // Tukar Peran
+            // Tukar Peran Bergantian
             const newDrawer = (data.drawer === 'Nadilla') ? 'Muhammad Dede Imran' : 'Nadilla';
             const newGuesser = (newDrawer === 'Nadilla') ? 'Muhammad Dede Imran' : 'Nadilla';
 
-            // Reset Canvas & Data Ronde Baru
             clearCanvas(false);
+            document.getElementById('guessInput').value = '';
+            document.getElementById('guesserStatusNote').classList.add('hidden');
 
             await updateDoc(gameDocRef, {
                 round: nextRoundNum,
@@ -546,12 +649,12 @@
                 guesser: newGuesser,
                 timer: 60,
                 canvasData: '',
-                lastGuess: '',
-                status: 'PLAYING'
+                pendingGuess: '',
+                revealedGuess: ''
             });
         }
 
-        // Canvas Drawing Features
+        // Canvas Drawing Engine
         function getCanvasCoords(e) {
             const rect = canvas.getBoundingClientRect();
             let clientX = e.clientX;
@@ -569,7 +672,7 @@
         }
 
         function startDrawing(e) {
-            if (document.getElementById('canvasOverlay').classList.contains('hidden') === false) return; // Hanya Pelukis
+            if (!document.getElementById('canvasOverlay').classList.contains('hidden')) return;
             isDrawing = true;
             const coords = getCanvasCoords(e);
             ctx.beginPath();
@@ -594,7 +697,6 @@
             syncCanvasToFirestore();
         }
 
-        // Sync local Canvas to Firestore
         async function syncCanvasToFirestore() {
             const dataUrl = canvas.toDataURL('image/png', 0.5);
             await updateDoc(gameDocRef, {
@@ -602,7 +704,6 @@
             });
         }
 
-        // Canvas Controls
         window.setColor = function(color) {
             currentBrushColor = color;
             isEraserActive = false;
@@ -633,7 +734,7 @@
             }
         };
 
-        // Touch & Mouse Event Listeners for Canvas
+        // Touch & Mouse Listeners
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
@@ -643,7 +744,6 @@
         canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
         canvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); }, { passive: false });
 
-        // Status Banner Helper
         function showStatusBanner(text) {
             const banner = document.getElementById('statusBanner');
             document.getElementById('statusBannerText').innerText = text;
@@ -652,49 +752,30 @@
             setTimeout(() => {
                 banner.classList.add('hidden');
                 banner.classList.remove('flex');
-            }, 4000);
+            }, 3500);
         }
 
-        // Game Over Screen Display
-        function showGameOver(data) {
-            const modal = document.getElementById('gameOverModal');
-            modal.classList.remove('hidden');
-
-            const nadilla = data.scoreNadilla || 0;
-            const dede = data.scoreDede || 0;
-
-            document.getElementById('finalScoreNadilla').innerText = nadilla;
-            document.getElementById('finalScoreDede').innerText = dede;
-
-            const winnerText = document.getElementById('winnerText');
-            if (nadilla > dede) {
-                winnerText.innerText = "Pemenang: Nadilla 🎉";
-            } else if (dede > nadilla) {
-                winnerText.innerText = "Pemenang: Muhammad Dede Imran 🎉";
-            } else {
-                winnerText.innerText = "Hasil Seri / Seri! 🤝";
-            }
+        function showGameOver() {
+            document.getElementById('gameOverModal').classList.remove('hidden');
         }
 
-        // Reset Game Total
-        window.resetGame = async function() {
+        window.resetWholeGame = async function() {
             document.getElementById('gameOverModal').classList.add('hidden');
             clearCanvas(false);
             await setDoc(gameDocRef, {
+                readyNadilla: false,
+                readyDede: false,
+                status: 'LOBBY',
                 round: 1,
-                drawer: 'Nadilla',
-                guesser: 'Muhammad Dede Imran',
+                drawer: '',
+                guesser: '',
                 timer: 60,
                 canvasData: '',
-                lastGuess: '',
-                scoreNadilla: 0,
-                scoreDede: 0,
-                status: 'PLAYING',
-                messages: []
+                pendingGuess: '',
+                revealedGuess: ''
             });
         };
 
-        // Initialize Auth on Load
         window.onload = function() {
             initAuth();
         };
