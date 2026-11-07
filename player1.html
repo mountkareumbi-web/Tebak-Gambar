@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Nadilla - Tebak Gambar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Header Status -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md">N</div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight text-indigo-300">Nadilla (Player 1)</h1>
+                <p id="roleBadge" class="text-xs text-slate-400">Menunggu Lobby...</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-6">
+            <div class="text-center">
+                <div class="text-xs text-slate-400 uppercase font-semibold">Ronde</div>
+                <div id="roundText" class="text-xl font-black text-indigo-400">1 / 20</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs text-slate-400 uppercase font-semibold">Sisa Waktu</div>
+                <div id="timerText" class="text-xl font-black text-amber-400">01:00</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 flex flex-col md:flex-row gap-6">
+        
+        <!-- Lobby Ready Panel -->
+        <div id="lobbySection" class="w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-6 my-auto">
+            <h2 class="text-2xl font-bold text-indigo-400">Ruang Tunggu Permainan</h2>
+            <p class="text-slate-300 max-w-md">Pastikan Muhammad Dede Imran sudah membuka aplikasi di device-nya.</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md">
+                <div class="p-4 bg-slate-700/50 rounded-2xl flex-1 border border-slate-600">
+                    <div class="text-xs text-slate-400">Nadilla (Anda)</div>
+                    <div id="p1StatusText" class="font-bold text-amber-400">Belum Siap</div>
+                </div>
+                <div class="p-4 bg-slate-700/50 rounded-2xl flex-1 border border-slate-600">
+                    <div class="text-xs text-slate-400">Muhammad Dede Imran</div>
+                    <div id="p2StatusText" class="font-bold text-amber-400">Belum Siap</div>
+                </div>
+            </div>
+
+            <button id="readyBtn" onclick="toggleReady()" class="w-full max-w-md py-4 rounded-2xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xl">
+                SAYA SIAP
+            </button>
+        </div>
+
+        <!-- Gameplay Game Section -->
+        <div id="gameSection" class="hidden flex-1 flex flex-col md:flex-row gap-6 w-full">
+            
+            <!-- Area Canvas Gambar -->
+            <div class="flex-1 bg-slate-800 border border-slate-700 rounded-3xl p-4 flex flex-col shadow-xl">
+                <div class="flex justify-between items-center mb-3 px-2">
+                    <span id="canvasHeader" class="text-sm font-semibold text-slate-300">Layar Gambar</span>
+                    <button id="clearBtn" onclick="clearCanvasAction()" class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg hover:bg-rose-500/30 transition">
+                        <i class="fa-solid fa-trash mr-1"></i> Bersihkan Canvas
+                    </button>
+                </div>
+
+                <div class="relative flex-1 bg-slate-950 rounded-2xl overflow-hidden border border-slate-700 min-h-[350px]">
+                    <canvas id="paintCanvas" class="w-full h-full cursor-crosshair touch-none"></canvas>
+                </div>
+
+                <!-- Palette Control (Tampil jika giliran Nadilla) -->
+                <div id="drawingTools" class="mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
+                    <div class="flex items-center gap-2">
+                        <button onclick="setColor('#ffffff')" class="w-7 h-7 rounded-full bg-white border border-slate-600"></button>
+                        <button onclick="setColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500"></button>
+                        <button onclick="setColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500"></button>
+                        <button onclick="setColor('#10b981')" class="w-7 h-7 rounded-full bg-emerald-500"></button>
+                        <button onclick="setColor('#f59e0b')" class="w-7 h-7 rounded-full bg-amber-500"></button>
+                        <button onclick="setColor('#8b5cf6')" class="w-7 h-7 rounded-full bg-purple-500"></button>
+                        <button onclick="setColor('#090d16')" class="w-7 h-7 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center text-xs text-white"><i class="fa-solid fa-eraser"></i></button>
+                        <input type="color" id="customColor" onchange="setColor(this.value)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="setLineWidth(3)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Kecil</button>
+                        <button onclick="setLineWidth(6)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Sedang</button>
+                        <button onclick="setLineWidth(12)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Besar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Tebakan / Chat -->
+            <div class="w-full md:w-80 bg-slate-800 border border-slate-700 rounded-3xl p-4 flex flex-col justify-between shadow-xl">
+                <div>
+                    <h3 class="font-bold text-slate-300 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-comments text-indigo-400"></i> Pesan Tebakan Dede
+                    </h3>
+
+                    <!-- Tombol Selesaikan (Hanya untuk Pelukis) -->
+                    <div id="artistActionBox" class="mb-4">
+                        <button onclick="finishRoundAction()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg transition">
+                            <i class="fa-solid fa-circle-check mr-1"></i> SELAISEKAN RONDE
+                        </button>
+                        <p class="text-[11px] text-slate-400 mt-1 text-center">Tekan tombol ini untuk melihat tebakan dari Dede.</p>
+                    </div>
+
+                    <!-- Tempat Tebakan Muncul -->
+                    <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-2xl p-4 min-h-[140px] flex items-center justify-center text-center">
+                        <span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>
+                    </div>
+                </div>
+
+                <!-- Input Tebakan (Tampil jika Nadilla jadi Penjawab) -->
+                <div id="guesserInputBox" class="mt-4 pt-3 border-t border-slate-700">
+                    <p class="text-xs text-slate-400 mb-2">Tebak gambaran Muhammad Dede Imran:</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="guessInput" placeholder="Ketik tebakanmu..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                        <button onclick="submitGuessAction()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl font-bold text-sm text-white">Kirim</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Game Over View -->
+        <div id="gameOverSection" class="hidden w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 text-center space-y-6 my-auto">
+            <i class="fa-solid fa-trophy text-6xl text-amber-400"></i>
+            <h2 class="text-3xl font-black text-indigo-400">PERMAINAN SELESAI!</h2>
+            <p class="text-slate-300">Seluruh 20 ronde telah berhasil diselesaikan oleh Nadilla & Muhammad Dede Imran.</p>
+            <button onclick="resetGameAction()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 font-bold rounded-2xl">Main Lagi</button>
+        </div>
+
+    </main>
+
+    <!-- Script Sync Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDummyKey_TebakGambar_NadillaDede",
+            authDomain: "tebak-gambar-live.firebaseapp.com",
+            projectId: "tebak-gambar-live",
+            storageBucket: "tebak-gambar-live.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:nadilladede"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const ROOM_ID = "game_room_nadilla_dede";
+        const roomRef = doc(db, "game_rooms", ROOM_ID);
+
+        const MY_NAME = "Nadilla";
+        let gameState = {};
+        let canvas, ctx, drawing = false;
+        let currentColor = "#ffffff", currentLineWidth = 6;
+        let localTimer = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            listenRoom();
+        });
+
+        function initCanvas() {
+            canvas = document.getElementById('paintCanvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+
+            canvas.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); e.preventDefault(); });
+            canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+            canvas.addEventListener('touchend', stopDraw);
+        }
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            if (gameState.canvasData) redrawCanvas(gameState.canvasData);
+        }
+
+        function listenRoom() {
+            onSnapshot(roomRef, (snapshot) => {
+                if (!snapshot.exists()) {
+                    initRoom();
+                    return;
+                }
+                gameState = snapshot.data();
+                renderUI();
+            });
+        }
+
+        async function initRoom() {
+            await setDoc(roomRef, {
+                status: 'LOBBY',
+                p1Ready: false,
+                p2Ready: false,
+                currentRound: 1,
+                currentArtist: '',
+                timeLeft: 60,
+                canvasData: [],
+                pendingGuess: '',
+                revealedGuess: ''
+            });
+        }
+
+        window.toggleReady = async function() {
+            const newStatus = !gameState.p1Ready;
+            let update = { p1Ready: newStatus };
+
+            if (newStatus && gameState.p2Ready) {
+                const artist = Math.random() < 0.5 ? "Nadilla" : "Muhammad Dede Imran";
+                update.status = "PLAYING";
+                update.currentArtist = artist;
+                update.currentRound = 1;
+                update.timeLeft = 60;
+                update.canvasData = [];
+                update.pendingGuess = "";
+                update.revealedGuess = "";
+                startTimer();
+            }
+            await setDoc(roomRef, update, { merge: true });
+        };
+
+        function renderUI() {
+            const { status, p1Ready, p2Ready, currentArtist, currentRound, timeLeft, revealedGuess } = gameState;
+
+            // Update Lobby Ready
+            document.getElementById('p1StatusText').innerText = p1Ready ? "SIAP" : "Belum Siap";
+            document.getElementById('p1StatusText').className = p1Ready ? "font-bold text-emerald-400" : "font-bold text-amber-400";
+            
+            document.getElementById('p2StatusText').innerText = p2Ready ? "SIAP" : "Belum Siap";
+            document.getElementById('p2StatusText').className = p2Ready ? "font-bold text-emerald-400" : "font-bold text-amber-400";
+
+            const readyBtn = document.getElementById('readyBtn');
+            if (p2Ready && !p1Ready) {
+                readyBtn.innerText = "MULAI SEKARANG!";
+                readyBtn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-xl animate-bounce";
+            } else if (p1Ready) {
+                readyBtn.innerText = "MENUNGGU DEDE...";
+                readyBtn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-slate-700 text-slate-400 cursor-not-allowed";
+            } else {
+                readyBtn.innerText = "SAYA SIAP";
+                readyBtn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xl";
+            }
+
+            if (status === 'LOBBY') {
+                document.getElementById('lobbySection').classList.remove('hidden');
+                document.getElementById('gameSection').classList.add('hidden');
+                document.getElementById('gameOverSection').classList.add('hidden');
+                return;
+            }
+
+            if (status === 'GAMEOVER') {
+                document.getElementById('lobbySection').classList.add('hidden');
+                document.getElementById('gameSection').classList.add('hidden');
+                document.getElementById('gameOverSection').classList.remove('hidden');
+                return;
+            }
+
+            // Gameplay Active
+            document.getElementById('lobbySection').classList.add('hidden');
+            document.getElementById('gameSection').classList.remove('hidden');
+
+            document.getElementById('roundText').innerText = `${currentRound} / 20`;
+            document.getElementById('timerText').innerText = `00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+
+            const isMyTurnToDraw = currentArtist === MY_NAME;
+            document.getElementById('roleBadge').innerText = isMyTurnToDraw ? "Role: Pelukis" : "Role: Penjawab";
+            document.getElementById('canvasHeader').innerText = isMyTurnToDraw ? "Layar Gambarmu (Nadilla)" : `Gambaran Live ${currentArtist}...`;
+
+            document.getElementById('drawingTools').style.display = isMyTurnToDraw ? 'flex' : 'none';
+            document.getElementById('clearBtn').style.display = isMyTurnToDraw ? 'block' : 'none';
+            document.getElementById('artistActionBox').style.display = isMyTurnToDraw ? 'block' : 'none';
+            document.getElementById('guesserInputBox').style.display = !isMyTurnToDraw ? 'block' : 'none';
+
+            // Sync Canvas
+            if (gameState.canvasData) redrawCanvas(gameState.canvasData);
+
+            // Display Revealed Guess
+            const guessBox = document.getElementById('guessBox');
+            if (revealedGuess) {
+                guessBox.innerHTML = `<div class="text-indigo-300 font-bold text-lg">"${revealedGuess}"</div>`;
+            } else {
+                guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>`;
+            }
+        }
+
+        function startDraw(e) {
+            if (gameState.currentArtist !== MY_NAME) return;
+            drawing = true;
+            const pos = getPos(e);
+            saveStroke(pos.x, pos.y, false);
+        }
+
+        function draw(e) {
+            if (!drawing || gameState.currentArtist !== MY_NAME) return;
+            const pos = getPos(e);
+            saveStroke(pos.x, pos.y, true);
+        }
+
+        function stopDraw() { drawing = false; }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: (e.clientX - rect.left) / rect.width,
+                y: (e.clientY - rect.top) / rect.height
+            };
+        }
+
+        async function saveStroke(x, y, dragging) {
+            const stroke = { x, y, dragging, color: currentColor, size: currentLineWidth };
+            const updatedCanvas = [...(gameState.canvasData || []), stroke];
+            await setDoc(roomRef, { canvasData: updatedCanvas }, { merge: true });
+        }
+
+        function redrawCanvas(data) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < data.length; i++) {
+                const p = data[i];
+                ctx.strokeStyle = p.color;
+                ctx.lineWidth = p.size;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                if (p.dragging && i > 0) {
+                    ctx.moveTo(data[i - 1].x * canvas.width, data[i - 1].y * canvas.height);
+                } else {
+                    ctx.moveTo(p.x * canvas.width - 1, p.y * canvas.height);
+                }
+                ctx.lineTo(p.x * canvas.width, p.y * canvas.height);
+                ctx.stroke();
+            }
+        }
+
+        window.setColor = function(c) { currentColor = c; };
+        window.setLineWidth = function(w) { currentLineWidth = w; };
+
+        window.clearCanvasAction = async function() {
+            if (gameState.currentArtist === MY_NAME) {
+                await setDoc(roomRef, { canvasData: [] }, { merge: true });
+            }
+        };
+
+        window.submitGuessAction = async function() {
+            const val = document.getElementById('guessInput').value.trim();
+            if (!val) return;
+            await setDoc(roomRef, { pendingGuess: val }, { merge: true });
+            document.getElementById('guessInput').value = '';
+            alert("Tebakan tersimpan! Akan muncul saat Nadilla menyelesaikannya.");
+        };
+
+        window.finishRoundAction = async function() {
+            if (gameState.currentArtist !== MY_NAME) return;
+            await completeRound();
+        };
+
+        async function completeRound() {
+            const nextRound = gameState.currentRound + 1;
+            const nextArtist = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
+            const finalGuess = gameState.pendingGuess || "(Waktu habis / Tidak ada tebakan)";
+
+            if (nextRound > 20) {
+                await setDoc(roomRef, { status: 'GAMEOVER', revealedGuess: finalGuess }, { merge: true });
+            } else {
+                await setDoc(roomRef, {
+                    currentRound: nextRound,
+                    currentArtist: nextArtist,
+                    timeLeft: 60,
+                    canvasData: [],
+                    revealedGuess: finalGuess,
+                    pendingGuess: ""
+                }, { merge: true });
+            }
+        }
+
+        function startTimer() {
+            if (localTimer) clearInterval(localTimer);
+            localTimer = setInterval(async () => {
+                if (gameState.status !== 'PLAYING') return;
+                if (gameState.currentArtist === MY_NAME) {
+                    if (gameState.timeLeft > 0) {
+                        await setDoc(roomRef, { timeLeft: gameState.timeLeft - 1 }, { merge: true });
+                    } else {
+                        await completeRound();
+                    }
+                }
+            }, 1000);
+        }
+
+        window.resetGameAction = async function() {
+            await initRoom();
+        };
+    </script>
+</body>
+</html>
