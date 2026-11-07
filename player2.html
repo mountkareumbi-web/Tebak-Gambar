@@ -10,8 +10,8 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <!-- Audio Backsound -->
-    <audio id="bgMusic" src="backsound.mp3" loop></audio>
+    <!-- Audio Backsound Autoplay & Loop -->
+    <audio id="bgMusic" src="backsound.mp3" loop autoplay></audio>
 
     <!-- Header -->
     <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
@@ -152,27 +152,31 @@
             selectedWord: '', 
             timeLeft: 50, 
             canvasData: [], 
-            pendingGuess: '', 
-            revealedGuess: '',
+            lastGuessResult: null, 
             scores: { "Nadilla": 0, "Muhammad Dede Imran": 0 }
         };
         let canvas, ctx, drawing = false;
         let currentColor = "#000000", currentLineWidth = 6;
         let isFillMode = false;
-        let timerInterval = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             initCanvas();
             initPeer();
-            playMusicOnce();
+            setupAutoplayMusic();
         });
 
-        function playMusicOnce() {
+        function setupAutoplayMusic() {
             const music = document.getElementById('bgMusic');
             if (music) {
                 music.volume = 0.4;
                 music.play().catch(() => {
-                    document.body.addEventListener('click', () => { music.play(); }, { once: true });
+                    const handleFirstInteraction = () => {
+                        music.play();
+                        document.removeEventListener('click', handleFirstInteraction);
+                        document.removeEventListener('touchstart', handleFirstInteraction);
+                    };
+                    document.addEventListener('click', handleFirstInteraction);
+                    document.addEventListener('touchstart', handleFirstInteraction);
                 });
             }
         }
@@ -243,14 +247,6 @@
             } else if (data.type === 'STATE_SYNC') {
                 gameState = data.gameState;
                 renderGameUI();
-                if (gameState.status === 'PLAYING' && !timerInterval) {
-                    startTimer();
-                } else if (gameState.status !== 'PLAYING' && timerInterval) {
-                    clearInterval(timerInterval);
-                }
-            } else if (data.type === 'TIMER_TICK') {
-                gameState.timeLeft = data.timeLeft;
-                document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
             } else if (data.type === 'DRAW_STROKE') {
                 gameState.canvasData.push(data.stroke);
                 redrawCanvas(gameState.canvasData);
@@ -324,10 +320,13 @@
                 redrawCanvas(gameState.canvasData);
 
                 const guessBox = document.getElementById('guessBox');
-                if (gameState.revealedGuess) {
-                    guessBox.innerHTML = `<div class="text-emerald-300 font-bold text-lg">"${gameState.revealedGuess}"</div><p class="text-xs text-slate-400 mt-2">Skor: N=${gameState.scores["Nadilla"]} | D=${gameState.scores["Muhammad Dede Imran"]}</p>`;
-                } else if (!isMyTurn && gameState.pendingGuess) {
-                    guessBox.innerHTML = `<div class="text-amber-300 font-semibold text-sm">Tebakan: "${gameState.pendingGuess}"</div>`;
+                if (gameState.lastGuessResult) {
+                    const iconColor = gameState.lastGuessResult.isCorrect ? 'text-emerald-400' : 'text-rose-400';
+                    const mark = gameState.lastGuessResult.isCorrect ? '✓' : '✗';
+                    guessBox.innerHTML = `
+                        <div class="font-bold text-base text-slate-200">Jawaban : "${gameState.lastGuessResult.guess}" <span class="${iconColor} text-lg font-black ml-1">${mark}</span></div>
+                        <p class="text-xs text-slate-400 mt-2">${gameState.lastGuessResult.msg}</p>
+                    `;
                 } else {
                     guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">${isMyTurn ? 'Tunggu tebakan dari Nadilla...' : 'Ketik tebakan nama benda, hewan, atau buah di bawah!'}</span>`;
                 }
@@ -354,17 +353,6 @@
             gameState.status = 'PLAYING';
             sendData({ type: 'WORD_SELECTED', word: word });
             renderGameUI();
-        }
-
-        function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                if (gameState.status !== 'PLAYING') return;
-                if (gameState.timeLeft > 0) {
-                    gameState.timeLeft--;
-                    document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
-                }
-            }, 1000);
         }
 
         function handleCanvasClick(e) {
