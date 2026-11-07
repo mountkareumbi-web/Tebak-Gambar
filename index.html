@@ -3,39 +3,412 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tebak Gambar Multiplayer</title>
+    <title>Nadilla - Tebak Gambar</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
 
-    <div class="max-w-md w-full bg-slate-800 rounded-3xl p-8 border border-slate-700 shadow-2xl text-center space-y-6">
-        <div class="inline-block p-4 bg-indigo-500/10 rounded-2xl text-indigo-400 mb-2">
-            <i class="fa-solid fa-gamepad text-5xl"></i>
-        </div>
-        <h1 class="text-3xl font-extrabold text-indigo-400">Tebak Gambar Live</h1>
-        <p class="text-slate-400 text-sm">Pilih profil pemain pada device ini untuk memulai:</p>
-
-        <div class="space-y-4 pt-4">
-            <a href="player1.html" class="w-full flex items-center justify-between p-4 bg-slate-700 hover:bg-indigo-600 transition duration-200 rounded-2xl font-bold text-lg group shadow-lg">
-                <span class="flex items-center gap-3">
-                    <i class="fa-solid fa-user-ninja text-indigo-400 group-hover:text-white text-2xl"></i>
-                    <span>Nadilla (Device 1)</span>
-                </span>
-                <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-white"></i>
-            </a>
-
-            <a href="player2.html" class="w-full flex items-center justify-between p-4 bg-slate-700 hover:bg-emerald-600 transition duration-200 rounded-2xl font-bold text-lg group shadow-lg">
-                <span class="flex items-center gap-3">
-                    <i class="fa-solid fa-user-astronaut text-emerald-400 group-hover:text-white text-2xl"></i>
-                    <span>Muhammad Dede Imran (Device 2)</span>
-                </span>
-                <i class="fa-solid fa-arrow-right text-slate-400 group-hover:text-white"></i>
-            </a>
+    <!-- Header -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md">N</div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight text-indigo-300">Nadilla (Player 1)</h1>
+                <p id="roleBadge" class="text-xs text-slate-400">Status Sync: <span id="connStatus" class="text-amber-400 font-bold">Menghubungkan...</span></p>
+            </div>
         </div>
         
-        <p class="text-xs text-slate-500 pt-4">Buka masing-masing link profil pada 2 HP/device berbeda.</p>
-    </div>
+        <div class="flex items-center gap-6">
+            <div class="text-center">
+                <div class="text-xs text-slate-400 uppercase font-semibold">Ronde</div>
+                <div id="roundText" class="text-xl font-black text-indigo-400">1 / 20</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs text-slate-400 uppercase font-semibold">Sisa Waktu</div>
+                <div id="timerText" class="text-xl font-black text-amber-400">01:00</div>
+            </div>
+        </div>
+    </header>
 
+    <!-- Main Body -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 flex flex-col md:flex-row gap-6">
+        
+        <!-- Lobby Ready -->
+        <div id="lobbySection" class="w-full bg-slate-800 border border-slate-700 rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-6 my-auto">
+            <h2 class="text-2xl font-bold text-indigo-400">Ruang Tunggu Real-Time</h2>
+            <p class="text-slate-300 max-w-md">Buka link <code class="bg-slate-900 px-2 py-1 rounded text-emerald-400">player2.html</code> di HP Muhammad Dede Imran.</p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md">
+                <div class="p-4 bg-slate-700/50 rounded-2xl flex-1 border border-slate-600">
+                    <div class="text-xs text-slate-400">Nadilla (Anda)</div>
+                    <div id="p1StatusText" class="font-bold text-amber-400">Belum Siap</div>
+                </div>
+                <div class="p-4 bg-slate-700/50 rounded-2xl flex-1 border border-slate-600">
+                    <div class="text-xs text-slate-400">Muhammad Dede Imran</div>
+                    <div id="p2StatusText" class="font-bold text-amber-400">Belum Siap</div>
+                </div>
+            </div>
+
+            <button id="readyBtn" onclick="toggleReady()" class="w-full max-w-md py-4 rounded-2xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xl">
+                SAYA SIAP
+            </button>
+        </div>
+
+        <!-- Gameplay Section -->
+        <div id="gameSection" class="hidden flex-1 flex flex-col md:flex-row gap-6 w-full">
+            
+            <!-- Canvas area -->
+            <div class="flex-1 bg-slate-800 border border-slate-700 rounded-3xl p-4 flex flex-col shadow-xl">
+                <div class="flex justify-between items-center mb-3 px-2">
+                    <span id="canvasHeader" class="text-sm font-semibold text-slate-300">Layar Gambar</span>
+                    <button id="clearBtn" onclick="clearCanvasAction()" class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-lg hover:bg-rose-500/30 transition">
+                        <i class="fa-solid fa-trash mr-1"></i> Hapus Gambar
+                    </button>
+                </div>
+
+                <div id="canvasContainer" class="relative flex-1 bg-white rounded-2xl overflow-hidden border border-slate-700 min-h-[350px]">
+                    <canvas id="paintCanvas" class="w-full h-full cursor-crosshair touch-none absolute inset-0"></canvas>
+                </div>
+
+                <!-- Color Palette -->
+                <div id="drawingTools" class="mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
+                    <div class="flex items-center gap-2">
+                        <button onclick="setColor('#000000')" class="w-7 h-7 rounded-full bg-black border border-slate-400 ring-2 ring-indigo-400"></button>
+                        <button onclick="setColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500"></button>
+                        <button onclick="setColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500"></button>
+                        <button onclick="setColor('#10b981')" class="w-7 h-7 rounded-full bg-emerald-500"></button>
+                        <button onclick="setColor('#f59e0b')" class="w-7 h-7 rounded-full bg-amber-500"></button>
+                        <button onclick="setColor('#8b5cf6')" class="w-7 h-7 rounded-full bg-purple-500"></button>
+                        <button onclick="setColor('#ffffff')" class="w-7 h-7 rounded-full bg-white border border-slate-600 flex items-center justify-center text-xs text-slate-800" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
+                        <input type="color" id="customColor" value="#000000" onchange="setColor(this.value)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="setLineWidth(3)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Kecil</button>
+                        <button onclick="setLineWidth(6)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Sedang</button>
+                        <button onclick="setLineWidth(12)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Besar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat & Guess Box -->
+            <div class="w-full md:w-80 bg-slate-800 border border-slate-700 rounded-3xl p-4 flex flex-col justify-between shadow-xl">
+                <div>
+                    <h3 class="font-bold text-slate-300 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-comments text-indigo-400"></i> Pesan Tebakan Dede
+                    </h3>
+
+                    <div id="artistActionBox" class="mb-4">
+                        <button onclick="finishRoundAction()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl shadow-lg transition">
+                            <i class="fa-solid fa-circle-check mr-1"></i> SELESAIKAN RONDE
+                        </button>
+                        <p class="text-[11px] text-slate-400 mt-1 text-center">Tekan untuk mengungkap tebakan Dede.</p>
+                    </div>
+
+                    <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-2xl p-4 min-h-[140px] flex items-center justify-center text-center">
+                        <span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>
+                    </div>
+                </div>
+
+                <div id="guesserInputBox" class="mt-4 pt-3 border-t border-slate-700">
+                    <p class="text-xs text-slate-400 mb-2">Tebak gambaran Dede:</p>
+                    <div class="flex gap-2">
+                        <input type="text" id="guessInput" placeholder="Ketik tebakanmu..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                        <button onclick="submitGuessAction()" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-xl font-bold text-sm text-white">Kirim</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        const MY_NAME = "Nadilla";
+        const ROOM_ID = "tebak_gambar_nadilla_dede_room_2026";
+        
+        let peer = null, conn = null;
+        let isP1Ready = false, isP2Ready = false;
+        let gameState = { status: 'LOBBY', currentRound: 1, currentArtist: '', timeLeft: 60, canvasData: [], pendingGuess: '', revealedGuess: '' };
+        let canvas, ctx, drawing = false;
+        let currentColor = "#000000", currentLineWidth = 6;
+        let timerInterval = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            initPeer();
+        });
+
+        function initCanvas() {
+            canvas = document.getElementById('paintCanvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('mouseleave', stopDraw);
+
+            canvas.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); e.preventDefault(); }, {passive: false});
+            canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); }, {passive: false});
+            canvas.addEventListener('touchend', stopDraw);
+        }
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            if (!container || !canvas) return;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+            if (gameState.canvasData) redrawCanvas(gameState.canvasData);
+        }
+
+        function initPeer() {
+            peer = new Peer(ROOM_ID);
+
+            peer.on('open', (id) => {
+                document.getElementById('connStatus').innerText = "Menunggu Dede...";
+                document.getElementById('connStatus').className = "text-amber-400 font-bold";
+            });
+
+            peer.on('connection', (connection) => {
+                conn = connection;
+                setupConnection();
+            });
+
+            peer.on('error', (err) => {
+                document.getElementById('connStatus').innerText = "Terhubung (Host)";
+                document.getElementById('connStatus').className = "text-emerald-400 font-bold";
+            });
+        }
+
+        function setupConnection() {
+            document.getElementById('connStatus').innerText = "Terhubung!";
+            document.getElementById('connStatus').className = "text-emerald-400 font-bold";
+
+            conn.on('data', (data) => {
+                handleIncomingData(data);
+            });
+
+            conn.on('close', () => {
+                document.getElementById('connStatus').innerText = "Dede Terputus";
+                document.getElementById('connStatus').className = "text-rose-400 font-bold";
+            });
+        }
+
+        function sendData(data) {
+            if (conn && conn.open) {
+                conn.send(data);
+            }
+        }
+
+        function handleIncomingData(data) {
+            if (data.type === 'READY_STATUS') {
+                isP2Ready = data.p2Ready;
+                updateLobbyUI();
+                if (isP1Ready && isP2Ready && gameState.status === 'LOBBY') {
+                    startGame();
+                }
+            } else if (data.type === 'GUESS_SUBMIT') {
+                gameState.pendingGuess = data.guess;
+            } else if (data.type === 'DRAW_STROKE') {
+                gameState.canvasData.push(data.stroke);
+                redrawCanvas(gameState.canvasData);
+            } else if (data.type === 'CLEAR_CANVAS') {
+                gameState.canvasData = [];
+                clearCanvasScreen();
+            }
+        }
+
+        window.toggleReady = function() {
+            isP1Ready = !isP1Ready;
+            updateLobbyUI();
+            sendData({ type: 'P1_READY_UPDATE', p1Ready: isP1Ready });
+
+            if (isP1Ready && isP2Ready && gameState.status === 'LOBBY') {
+                startGame();
+            }
+        };
+
+        function updateLobbyUI() {
+            document.getElementById('p1StatusText').innerText = isP1Ready ? "SIAP" : "Belum Siap";
+            document.getElementById('p1StatusText').className = isP1Ready ? "font-bold text-emerald-400" : "font-bold text-amber-400";
+
+            document.getElementById('p2StatusText').innerText = isP2Ready ? "SIAP" : "Belum Siap";
+            document.getElementById('p2StatusText').className = isP2Ready ? "font-bold text-emerald-400" : "font-bold text-amber-400";
+
+            const btn = document.getElementById('readyBtn');
+            if (isP2Ready && !isP1Ready) {
+                btn.innerText = "MULAI SEKARANG!";
+                btn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-xl animate-bounce";
+            } else if (isP1Ready) {
+                btn.innerText = "MENUNGGU DEDE...";
+                btn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-slate-700 text-slate-400 cursor-not-allowed";
+            } else {
+                btn.innerText = "SAYA SIAP";
+                btn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-xl";
+            }
+        }
+
+        function startGame() {
+            gameState.status = 'PLAYING';
+            gameState.currentRound = 1;
+            gameState.currentArtist = Math.random() < 0.5 ? "Nadilla" : "Muhammad Dede Imran";
+            gameState.timeLeft = 60;
+            gameState.canvasData = [];
+            gameState.pendingGuess = '';
+            gameState.revealedGuess = '';
+
+            syncStateToClient();
+            renderGameUI();
+            startTimer();
+        }
+
+        function syncStateToClient() {
+            sendData({ type: 'STATE_UPDATE', gameState: gameState });
+        }
+
+        function renderGameUI() {
+            document.getElementById('lobbySection').classList.add('hidden');
+            document.getElementById('gameSection').classList.remove('hidden');
+
+            setTimeout(resizeCanvas, 50);
+
+            document.getElementById('roundText').innerText = `${gameState.currentRound} / 20`;
+            document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
+
+            const isMyTurn = gameState.currentArtist === MY_NAME;
+            document.getElementById('canvasHeader').innerText = isMyTurn ? "Layar Gambarmu (Nadilla)" : `Gambaran Live ${gameState.currentArtist}...`;
+
+            document.getElementById('drawingTools').style.display = isMyTurn ? 'flex' : 'none';
+            document.getElementById('clearBtn').style.display = isMyTurn ? 'block' : 'none';
+            document.getElementById('artistActionBox').style.display = isMyTurn ? 'block' : 'none';
+            document.getElementById('guesserInputBox').style.display = !isMyTurn ? 'block' : 'none';
+
+            redrawCanvas(gameState.canvasData);
+
+            const guessBox = document.getElementById('guessBox');
+            if (gameState.revealedGuess) {
+                guessBox.innerHTML = `<div class="text-indigo-300 font-bold text-lg">"${gameState.revealedGuess}"</div>`;
+            } else {
+                guessBox.innerHTML = `<span class="text-slate-500 italic text-sm">Belum ada tebakan yang diselesaikan...</span>`;
+            }
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameState.status !== 'PLAYING') return;
+
+                if (gameState.timeLeft > 0) {
+                    gameState.timeLeft--;
+                    document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
+                    sendData({ type: 'TIMER_TICK', timeLeft: gameState.timeLeft });
+                } else {
+                    finishRoundAction();
+                }
+            }, 1000);
+        }
+
+        window.finishRoundAction = function() {
+            gameState.revealedGuess = gameState.pendingGuess || "(Tidak ada tebakan)";
+            gameState.currentRound++;
+            
+            if (gameState.currentRound > 20) {
+                gameState.status = 'GAMEOVER';
+                alert("Game Selesai! 20 Ronde Telah Berakhir.");
+            } else {
+                gameState.currentArtist = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
+                gameState.timeLeft = 60;
+                gameState.canvasData = [];
+                gameState.pendingGuess = '';
+            }
+
+            syncStateToClient();
+            renderGameUI();
+        };
+
+        function startDraw(e) {
+            if (gameState.currentArtist !== MY_NAME) return;
+            drawing = true;
+            const pos = getPos(e);
+            addStroke(pos.x, pos.y, false);
+        }
+
+        function draw(e) {
+            if (!drawing || gameState.currentArtist !== MY_NAME) return;
+            const pos = getPos(e);
+            addStroke(pos.x, pos.y, true);
+        }
+
+        function stopDraw() { drawing = false; }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+            const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+            return {
+                x: (clientX - rect.left) / rect.width,
+                y: (clientY - rect.top) / rect.height
+            };
+        }
+
+        function addStroke(x, y, dragging) {
+            const stroke = { x, y, dragging, color: currentColor, size: currentLineWidth };
+            gameState.canvasData.push(stroke);
+            drawSingleStroke(stroke, gameState.canvasData[gameState.canvasData.length - 2]);
+            sendData({ type: 'DRAW_STROKE', stroke: stroke });
+        }
+
+        function clearCanvasScreen() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawSingleStroke(p, prevP) {
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = p.size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            if (p.dragging && prevP) {
+                ctx.moveTo(prevP.x * canvas.width, prevP.y * canvas.height);
+            } else {
+                ctx.moveTo(p.x * canvas.width - 0.5, p.y * canvas.height);
+            }
+            ctx.lineTo(p.x * canvas.width, p.y * canvas.height);
+            ctx.stroke();
+        }
+
+        function redrawCanvas(data) {
+            clearCanvasScreen();
+            for (let i = 0; i < data.length; i++) {
+                const p = data[i];
+                const prevP = (p.dragging && i > 0) ? data[i - 1] : null;
+                drawSingleStroke(p, prevP);
+            }
+        }
+
+        window.setColor = (c) => currentColor = c;
+        window.setLineWidth = (w) => currentLineWidth = w;
+
+        window.clearCanvasAction = function() {
+            if (gameState.currentArtist === MY_NAME) {
+                gameState.canvasData = [];
+                clearCanvasScreen();
+                sendData({ type: 'CLEAR_CANVAS' });
+            }
+        };
+
+        window.submitGuessAction = function() {
+            const val = document.getElementById('guessInput').value.trim();
+            if (!val) return;
+            gameState.pendingGuess = val;
+            sendData({ type: 'GUESS_SUBMIT', guess: val });
+            document.getElementById('guessInput').value = '';
+            alert("Tebakan terkirim ke server!");
+        };
+    </script>
 </body>
 </html>
