@@ -2,40 +2,40 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pilih Profil - Tebak Gambar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
+<body class="bg-slate-900 text-slate-100 font-sans h-screen flex flex-col items-center justify-center p-3 overflow-hidden">
 
     <!-- Audio Backsound -->
     <audio id="bgMusic" src="backsound.mp3" loop autoplay></audio>
 
-    <div class="max-w-md w-full bg-slate-800 border border-slate-700 rounded-3xl p-6 shadow-2xl text-center space-y-4">
-        <h1 class="text-2xl font-black text-indigo-400">Tebak Gambar Live</h1>
-        <p class="text-slate-300 text-sm">Pilih profil pemain pada device ini untuk memulai:</p>
+    <div class="max-w-md w-full bg-slate-800 border border-slate-700 rounded-2xl p-5 shadow-2xl text-center space-y-4">
+        <h1 class="text-xl font-black text-indigo-400">Tebak Gambar Live</h1>
+        <p class="text-slate-300 text-xs">Pilih profil pemain pada device ini untuk memulai:</p>
 
-        <div class="grid grid-cols-1 gap-3 mt-2">
+        <div class="grid grid-cols-1 gap-2.5">
             <!-- Profil Nadilla -->
-            <a href="player1.html" class="flex items-center gap-4 p-3 bg-slate-700/50 hover:bg-indigo-600/30 border border-slate-600 hover:border-indigo-500 rounded-2xl transition group text-left">
-                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-indigo-400 flex-shrink-0 bg-indigo-600 shadow-md">
+            <a href="player1.html" class="flex items-center gap-3 p-3 bg-slate-700/50 hover:bg-indigo-600/30 border border-slate-600 hover:border-indigo-500 rounded-xl transition group text-left">
+                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-indigo-400 flex-shrink-0 bg-indigo-600 shadow-md">
                     <img src="player1.png" alt="Nadilla" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h2 class="font-bold text-base text-indigo-300 group-hover:text-white">Nadilla</h2>
-                    <p class="text-xs text-slate-400 group-hover:text-slate-200">Player 1 (Host Room)</p>
+                    <h2 class="font-bold text-sm text-indigo-300 group-hover:text-white">Nadilla</h2>
+                    <p class="text-[10px] text-slate-400 group-hover:text-slate-200">Player 1 (Host Room)</p>
                 </div>
             </a>
 
             <!-- Profil Dede -->
-            <a href="player2.html" class="flex items-center gap-4 p-3 bg-slate-700/50 hover:bg-emerald-600/30 border border-slate-600 hover:border-emerald-500 rounded-2xl transition group text-left">
-                <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-400 flex-shrink-0 bg-emerald-600 shadow-md">
+            <a href="player2.html" class="flex items-center gap-3 p-3 bg-slate-700/50 hover:bg-emerald-600/30 border border-slate-600 hover:border-emerald-500 rounded-xl transition group text-left">
+                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald-400 flex-shrink-0 bg-emerald-600 shadow-md">
                     <img src="player2.png" alt="Muhammad Dede Imran" class="w-full h-full object-cover">
                 </div>
                 <div>
-                    <h2 class="font-bold text-base text-emerald-300 group-hover:text-white">Muhammad Dede Imran</h2>
-                    <p class="text-xs text-slate-400 group-hover:text-slate-200">Player 2</p>
+                    <h2 class="font-bold text-sm text-emerald-300 group-hover:text-white">Muhammad Dede Imran</h2>
+                    <p class="text-[10px] text-slate-400 group-hover:text-slate-200">Player 2</p>
                 </div>
             </a>
         </div>
