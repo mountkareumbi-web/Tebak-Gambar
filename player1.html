@@ -68,21 +68,21 @@
                     </button>
                 </div>
 
-                <div class="relative flex-1 bg-slate-950 rounded-2xl overflow-hidden border border-slate-700 min-h-[350px]">
-                    <canvas id="paintCanvas" class="w-full h-full cursor-crosshair touch-none"></canvas>
+                <div id="canvasContainer" class="relative flex-1 bg-white rounded-2xl overflow-hidden border border-slate-700 min-h-[350px]">
+                    <canvas id="paintCanvas" class="w-full h-full cursor-crosshair touch-none absolute inset-0"></canvas>
                 </div>
 
                 <!-- Color Palette -->
                 <div id="drawingTools" class="mt-4 flex flex-wrap items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-700/50">
                     <div class="flex items-center gap-2">
-                        <button onclick="setColor('#ffffff')" class="w-7 h-7 rounded-full bg-white border border-slate-600"></button>
+                        <button onclick="setColor('#000000')" class="w-7 h-7 rounded-full bg-black border border-slate-400 ring-2 ring-indigo-400"></button>
                         <button onclick="setColor('#ef4444')" class="w-7 h-7 rounded-full bg-red-500"></button>
                         <button onclick="setColor('#3b82f6')" class="w-7 h-7 rounded-full bg-blue-500"></button>
                         <button onclick="setColor('#10b981')" class="w-7 h-7 rounded-full bg-emerald-500"></button>
                         <button onclick="setColor('#f59e0b')" class="w-7 h-7 rounded-full bg-amber-500"></button>
                         <button onclick="setColor('#8b5cf6')" class="w-7 h-7 rounded-full bg-purple-500"></button>
-                        <button onclick="setColor('#090d16')" class="w-7 h-7 rounded-full bg-slate-950 border border-slate-600 flex items-center justify-center text-xs text-white"><i class="fa-solid fa-eraser"></i></button>
-                        <input type="color" id="customColor" onchange="setColor(this.value)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
+                        <button onclick="setColor('#ffffff')" class="w-7 h-7 rounded-full bg-white border border-slate-600 flex items-center justify-center text-xs text-slate-800" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
+                        <input type="color" id="customColor" value="#000000" onchange="setColor(this.value)" class="w-8 h-8 rounded-lg bg-transparent cursor-pointer">
                     </div>
                     <div class="flex items-center gap-2">
                         <button onclick="setLineWidth(3)" class="px-3 py-1 bg-slate-700 text-xs rounded-lg font-bold">Kecil</button>
@@ -132,7 +132,7 @@
         let isP1Ready = false, isP2Ready = false;
         let gameState = { status: 'LOBBY', currentRound: 1, currentArtist: '', timeLeft: 60, canvasData: [], pendingGuess: '', revealedGuess: '' };
         let canvas, ctx, drawing = false;
-        let currentColor = "#ffffff", currentLineWidth = 6;
+        let currentColor = "#000000", currentLineWidth = 6;
         let timerInterval = null;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -151,20 +151,20 @@
             canvas.addEventListener('mouseup', stopDraw);
             canvas.addEventListener('mouseleave', stopDraw);
 
-            canvas.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); e.preventDefault(); });
-            canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); });
+            canvas.addEventListener('touchstart', (e) => { startDraw(e.touches[0]); e.preventDefault(); }, {passive: false});
+            canvas.addEventListener('touchmove', (e) => { draw(e.touches[0]); e.preventDefault(); }, {passive: false});
             canvas.addEventListener('touchend', stopDraw);
         }
 
         function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            const container = document.getElementById('canvasContainer');
+            if (!container || !canvas) return;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
             if (gameState.canvasData) redrawCanvas(gameState.canvasData);
         }
 
         function initPeer() {
-            // Player 1 sebagai host room
             peer = new Peer(ROOM_ID);
 
             peer.on('open', (id) => {
@@ -178,7 +178,6 @@
             });
 
             peer.on('error', (err) => {
-                console.log("Peer error, retrying...", err);
                 document.getElementById('connStatus').innerText = "Terhubung (Host)";
                 document.getElementById('connStatus').className = "text-emerald-400 font-bold";
             });
@@ -218,7 +217,7 @@
                 redrawCanvas(gameState.canvasData);
             } else if (data.type === 'CLEAR_CANVAS') {
                 gameState.canvasData = [];
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                clearCanvasScreen();
             }
         }
 
@@ -273,6 +272,8 @@
         function renderGameUI() {
             document.getElementById('lobbySection').classList.add('hidden');
             document.getElementById('gameSection').classList.remove('hidden');
+
+            setTimeout(resizeCanvas, 50);
 
             document.getElementById('roundText').innerText = `${gameState.currentRound} / 20`;
             document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
@@ -345,34 +346,47 @@
 
         function getPos(e) {
             const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+            const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
             return {
-                x: (e.clientX - rect.left) / rect.width,
-                y: (e.clientY - rect.top) / rect.height
+                x: (clientX - rect.left) / rect.width,
+                y: (clientY - rect.top) / rect.height
             };
         }
 
         function addStroke(x, y, dragging) {
             const stroke = { x, y, dragging, color: currentColor, size: currentLineWidth };
             gameState.canvasData.push(stroke);
-            redrawCanvas(gameState.canvasData);
+            drawSingleStroke(stroke, gameState.canvasData[gameState.canvasData.length - 2]);
             sendData({ type: 'DRAW_STROKE', stroke: stroke });
         }
 
+        function clearCanvasScreen() {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawSingleStroke(p, prevP) {
+            ctx.strokeStyle = p.color;
+            ctx.lineWidth = p.size;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            if (p.dragging && prevP) {
+                ctx.moveTo(prevP.x * canvas.width, prevP.y * canvas.height);
+            } else {
+                ctx.moveTo(p.x * canvas.width - 0.5, p.y * canvas.height);
+            }
+            ctx.lineTo(p.x * canvas.width, p.y * canvas.height);
+            ctx.stroke();
+        }
+
         function redrawCanvas(data) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            clearCanvasScreen();
             for (let i = 0; i < data.length; i++) {
                 const p = data[i];
-                ctx.strokeStyle = p.color;
-                ctx.lineWidth = p.size;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                if (p.dragging && i > 0) {
-                    ctx.moveTo(data[i - 1].x * canvas.width, data[i - 1].y * canvas.height);
-                } else {
-                    ctx.moveTo(p.x * canvas.width - 1, p.y * canvas.height);
-                }
-                ctx.lineTo(p.x * canvas.width, p.y * canvas.height);
-                ctx.stroke();
+                const prevP = (p.dragging && i > 0) ? data[i - 1] : null;
+                drawSingleStroke(p, prevP);
             }
         }
 
@@ -382,7 +396,7 @@
         window.clearCanvasAction = function() {
             if (gameState.currentArtist === MY_NAME) {
                 gameState.canvasData = [];
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                clearCanvasScreen();
                 sendData({ type: 'CLEAR_CANVAS' });
             }
         };
