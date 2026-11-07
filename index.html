@@ -95,12 +95,25 @@
             </div>
 
             <!-- Ready / Waiting Stage -->
-            <div id="readyStep" class="hidden flex-col items-center gap-4">
-                <div class="w-full bg-slate-900/60 p-4 rounded-2xl border border-slate-700 flex flex-col gap-3">
-                    <div class="flex justify-between items-center text-sm">
-                        <span class="text-slate-400">Nadilla:</span>
-                        <span id="readyStatusNadilla" class="font-bold text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>
-                    </div>
+        <div id="readyStep" class="hidden flex-col items-center gap-4">
+            <div class="w-full bg-slate-900/60 p-4 rounded-2xl border border-slate-700 flex flex-col gap-3">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400">Nadilla:</span>
+                    <span id="readyStatusNadilla" class="font-bold text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>
+                </div>
+                <div class="border-t border-slate-800"></div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400">Muhammad Dede Imran:</span>
+                    <span id="readyStatusDede" class="font-bold text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>
+                </div>
+            </div>
+
+            <button id="readyButton" onclick="toggleReady()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-lg rounded-2xl shadow-lg shadow-emerald-500/20 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check"></i> <span id="readyButtonText">SAYA SIAP</span>
+            </button>
+            <p id="waitingNotice" class="text-xs text-amber-400 italic">Menunggu pemain kedua menekan tombol...</p>
+        </div>
+    </div>
                     <div class="border-t border-slate-800"></div>
                     <div class="flex justify-between items-center text-sm">
                         <span class="text-slate-400">Muhammad Dede Imran:</span>
@@ -278,7 +291,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Context Setup
+        // Fixed public room ID for guaranteed multi-device connectivity
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'tebak-gambar-app-v2';
         const firebaseConfig = typeof __firebase_config !== 'undefined' 
             ? JSON.parse(__firebase_config) 
@@ -295,7 +308,8 @@
         let currentLineWidth = 5;
         let isEraserActive = false;
 
-        const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameState', 'sessionState');
+        // Standardized Firestore Shared Document Reference
+        const gameDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'gameRooms', 'game_room_nadilla_dede');
 
         let timerInterval = null;
 
@@ -312,6 +326,160 @@
             ctx.lineJoin = 'round';
             if (tempImage.width > 0 && tempImage.height > 0) {
                 ctx.putImageData(tempImage, 0, 0);
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // Authenticate User & Initialize Global Shared Room
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth Exception:", err);
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Ensure room document exists
+                try {
+                    await setDoc(gameDocRef, {
+                        readyNadilla: false,
+                        readyDede: false,
+                        status: 'LOBBY',
+                        round: 1,
+                        drawer: '',
+                        guesser: '',
+                        timer: 60,
+                        canvasData: '',
+                        pendingGuess: '',
+                        revealedGuess: ''
+                    }, { merge: true });
+                } catch(e) {
+                    console.log("Room init note:", e);
+                }
+                subscribeToGameState();
+            }
+        });
+
+        // 1. SELECT PLAYER ROLE IN LOBBY
+        window.selectPlayerRole = async function(roleName) {
+            currentUserRole = roleName;
+            document.getElementById('selectPlayerStep').classList.add('hidden');
+            document.getElementById('readyStep').classList.remove('hidden');
+            document.getElementById('readyStep').classList.add('flex');
+            
+            document.getElementById('userBadge').classList.remove('hidden');
+            document.getElementById('userBadge').classList.add('flex');
+            document.getElementById('currentRoleText').innerText = currentUserRole;
+        };
+
+        // 2. TOGGLE READY BUTTON LOGIC
+        window.toggleReady = async function() {
+            const docSnap = await getDoc(gameDocRef);
+            const data = docSnap.exists() ? docSnap.data() : {};
+
+            let isNadillaReady = data.readyNadilla || false;
+            let isDedeReady = data.readyDede || false;
+
+            if (currentUserRole === 'Nadilla') {
+                isNadillaReady = !isNadillaReady;
+            } else if (currentUserRole === 'Muhammad Dede Imran') {
+                isDedeReady = !isDedeReady;
+            }
+
+            // Jika Kedua Pemain Siap -> Mulai Permainan & ACAK Siapa Menggambar Pertama
+            if (isNadillaReady && isDedeReady) {
+                const players = ['Nadilla', 'Muhammad Dede Imran'];
+                const firstDrawer = players[Math.floor(Math.random() * players.length)];
+                const firstGuesser = (firstDrawer === 'Nadilla') ? 'Muhammad Dede Imran' : 'Nadilla';
+
+                await setDoc(gameDocRef, {
+                    readyNadilla: true,
+                    readyDede: true,
+                    status: 'PLAYING',
+                    round: 1,
+                    drawer: firstDrawer,
+                    guesser: firstGuesser,
+                    timer: 60,
+                    canvasData: '',
+                    pendingGuess: '',
+                    revealedGuess: ''
+                }, { merge: true });
+            } else {
+                // Update status ready peranti ini ke Firestore agar peranti lain langsung update
+                await setDoc(gameDocRef, {
+                    readyNadilla: isNadillaReady,
+                    readyDede: isDedeReady
+                }, { merge: true });
+            }
+        };
+
+        // 3. LISTEN & SYNC GAME STATE REALTIME
+        function subscribeToGameState() {
+            onSnapshot(gameDocRef, (docSnap) => {
+                if (!docSnap.exists()) return;
+                const data = docSnap.data();
+
+                if (data.status === 'LOBBY') {
+                    renderLobbyUI(data);
+                } else if (data.status === 'PLAYING') {
+                    renderGameplayUI(data);
+                } else if (data.status === 'GAME_OVER') {
+                    showGameOver();
+                }
+            }, (error) => {
+                console.error("Firestore Listen Error:", error);
+            });
+        }
+
+        // Render Lobby Ready UI Status dynamically
+        function renderLobbyUI(data) {
+            document.getElementById('lobbyScreen').classList.remove('hidden');
+            document.getElementById('gameplayScreen').classList.add('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+
+            const readyN = data.readyNadilla || false;
+            const readyD = data.readyDede || false;
+
+            // Status Badge Player 1
+            const nadillaEl = document.getElementById('readyStatusNadilla');
+            nadillaEl.innerHTML = readyN 
+                ? `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> SIAP</span>` 
+                : `<span class="text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>`;
+
+            // Status Badge Player 2
+            const dedeEl = document.getElementById('readyStatusDede');
+            dedeEl.innerHTML = readyD 
+                ? `<span class="text-emerald-400 font-bold"><i class="fa-solid fa-circle-check"></i> SIAP</span>` 
+                : `<span class="text-slate-500"><i class="fa-solid fa-clock"></i> Belum Siap</span>`;
+
+            // Update Tombol Sesuai Kondisi Peranti Ini vs Lawan
+            const isSelfReady = (currentUserRole === 'Nadilla') ? readyN : readyD;
+            const isOpponentReady = (currentUserRole === 'Nadilla') ? readyD : readyN;
+
+            const btn = document.getElementById('readyButton');
+            const btnText = document.getElementById('readyButtonText');
+            const notice = document.getElementById('waitingNotice');
+
+            if (isSelfReady) {
+                btn.className = "w-full py-4 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-lg rounded-2xl shadow-lg transition flex items-center justify-center gap-2";
+                btnText.innerText = "BATAL SIAP";
+                notice.innerText = isOpponentReady ? "Kedua pemain siap! Memulai game..." : "Menunggu lawan menekan tombol SIAP / MULAI...";
+            } else {
+                if (isOpponentReady) {
+                    btn.className = "w-full py-4 bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white font-extrabold text-lg rounded-2xl shadow-xl shadow-emerald-500/30 animate-pulse transition flex items-center justify-center gap-2";
+                    btnText.innerText = "MULAI SEKARANG!";
+                    notice.innerText = "Lawan sudah SIAP! Tekan 'MULAI SEKARANG!' untuk bermain.";
+                } else {
+                    btn.className = "w-full py-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-extrabold text-lg rounded-2xl shadow-lg shadow-indigo-500/20 transition flex items-center justify-center gap-2";
+                    btnText.innerText = "SAYA SIAP";
+                    notice.innerText = "Tekan tombol di atas jika Anda sudah siap.";
+                }
             }
         }
         window.addEventListener('resize', resizeCanvas);
