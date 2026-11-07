@@ -8,116 +8,116 @@
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans h-screen flex flex-col justify-between overflow-hidden">
+<body class="bg-slate-900 text-slate-100 font-sans h-screen w-screen flex flex-col justify-between overflow-hidden m-0 p-0">
 
     <!-- Audio Backsound Autoplay & Loop -->
     <audio id="bgMusic" src="backsound.mp3" loop autoplay></audio>
 
     <!-- Header Ringkas -->
-    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 px-4 py-2 flex items-center justify-between z-50 flex-shrink-0">
+    <header class="bg-slate-800/90 backdrop-blur border-b border-slate-700 px-3 py-1.5 flex items-center justify-between z-50 flex-shrink-0">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-full overflow-hidden bg-indigo-600 border border-indigo-400 shadow-md flex items-center justify-center">
+            <div class="w-7 h-7 rounded-full overflow-hidden bg-indigo-600 border border-indigo-400 shadow-md flex items-center justify-center">
                 <img src="player1.png" alt="Nadilla" class="w-full h-full object-cover">
             </div>
             <div>
                 <h1 class="font-bold text-xs leading-tight text-indigo-300">Nadilla (P1)</h1>
-                <p class="text-[10px] text-slate-400"><span id="connStatus" class="text-amber-400 font-bold">Menghubungkan...</span></p>
+                <p class="text-[9px] text-slate-400"><span id="connStatus" class="text-amber-400 font-bold">Menghubungkan...</span></p>
             </div>
         </div>
         
-        <div class="flex items-center gap-4 text-center">
+        <div class="flex items-center gap-3 text-center">
             <div>
-                <div class="text-[9px] text-slate-400 uppercase font-semibold">Skor</div>
+                <div class="text-[8px] text-slate-400 uppercase font-semibold">Skor</div>
                 <div id="scoreText" class="text-xs font-black text-indigo-400">0 : 0</div>
             </div>
             <div>
-                <div class="text-[9px] text-slate-400 uppercase font-semibold">Ronde</div>
+                <div class="text-[8px] text-slate-400 uppercase font-semibold">Ronde</div>
                 <div id="roundText" class="text-xs font-black text-indigo-400">1/20</div>
             </div>
             <div>
-                <div class="text-[9px] text-slate-400 uppercase font-semibold">Waktu</div>
+                <div class="text-[8px] text-slate-400 uppercase font-semibold">Waktu</div>
                 <div id="timerText" class="text-xs font-black text-amber-400">00:50</div>
             </div>
         </div>
     </header>
 
-    <!-- Main Body Compact (Tanpa Scroll) -->
-    <main class="flex-1 max-w-4xl w-full mx-auto p-2 flex flex-col gap-2 overflow-hidden">
+    <!-- Main Body Compact (Menempel Rapat Tanpa Ruang Kosong Bawah) -->
+    <main class="flex-1 w-full mx-auto p-1.5 flex flex-col gap-1.5 overflow-hidden justify-between">
         
         <!-- Lobby Ready -->
-        <div id="lobbySection" class="w-full h-full bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 my-auto">
-            <h2 class="text-xl font-bold text-indigo-400">Ruang Tunggu Real-Time</h2>
-            <p class="text-slate-300 text-xs">Buka link <code class="bg-slate-900 px-2 py-1 rounded text-emerald-400">player2.html</code> di HP Dede.</p>
+        <div id="lobbySection" class="w-full h-full bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center text-center space-y-3 my-auto">
+            <h2 class="text-lg font-bold text-indigo-400">Ruang Tunggu Real-Time</h2>
+            <p class="text-slate-300 text-xs">Buka link <code class="bg-slate-900 px-1.5 py-0.5 rounded text-emerald-400">player2.html</code> di HP Dede.</p>
             
-            <div class="flex gap-3 w-full justify-center max-w-sm">
-                <div class="p-3 bg-slate-700/50 rounded-xl flex-1 border border-slate-600 text-xs">
-                    <div class="text-[10px] text-slate-400">Nadilla</div>
+            <div class="flex gap-2 w-full justify-center max-w-xs">
+                <div class="p-2.5 bg-slate-700/50 rounded-lg flex-1 border border-slate-600 text-xs">
+                    <div class="text-[9px] text-slate-400">Nadilla</div>
                     <div id="p1StatusText" class="font-bold text-amber-400">Belum Siap</div>
                 </div>
-                <div class="p-3 bg-slate-700/50 rounded-xl flex-1 border border-slate-600 text-xs">
-                    <div class="text-[10px] text-slate-400">Dede</div>
+                <div class="p-2.5 bg-slate-700/50 rounded-lg flex-1 border border-slate-600 text-xs">
+                    <div class="text-[9px] text-slate-400">Dede</div>
                     <div id="p2StatusText" class="font-bold text-amber-400">Belum Siap</div>
                 </div>
             </div>
 
-            <button id="readyBtn" onclick="toggleReady()" class="w-full max-w-sm py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg">
+            <button id="readyBtn" onclick="toggleReady()" class="w-full max-w-xs py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-md">
                 SAYA SIAP
             </button>
         </div>
 
         <!-- Word Selection Section -->
-        <div id="wordSelectSection" class="hidden w-full h-full bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 my-auto">
-            <h2 id="wordSelectTitle" class="text-xl font-bold text-indigo-400">Giliran Anda Menggambar!</h2>
+        <div id="wordSelectSection" class="hidden w-full h-full bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col items-center justify-center text-center space-y-3 my-auto">
+            <h2 id="wordSelectTitle" class="text-lg font-bold text-indigo-400">Giliran Anda Menggambar!</h2>
             <p id="wordSelectDesc" class="text-slate-300 text-xs">Pilih salah satu kata di bawah ini:</p>
-            <div id="wordOptionsContainer" class="grid grid-cols-2 gap-2 w-full max-w-sm"></div>
+            <div id="wordOptionsContainer" class="grid grid-cols-2 gap-2 w-full max-w-xs"></div>
         </div>
 
-        <!-- Gameplay Section (Persegi Panjang & Muat di Layar HP) -->
-        <div id="gameSection" class="hidden flex-1 flex flex-col gap-2 w-full overflow-hidden">
+        <!-- Gameplay Section (Rapat Tanpa Sisa Ruang Kosong Bawah) -->
+        <div id="gameSection" class="hidden flex-1 flex flex-col gap-1.5 w-full overflow-hidden">
             
-            <!-- Canvas Area (Dibuat Persegi Panjang / Tipis ke Atas) -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-2 flex flex-col shadow-md flex-1">
+            <!-- Canvas Area (Fleksibel Mengisi Ruang Tersedia) -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-1.5 flex flex-col shadow-sm flex-1 overflow-hidden">
                 <div class="flex justify-between items-center px-1 mb-1">
-                    <span id="canvasHeader" class="text-xs font-semibold text-slate-300">Layar Gambar</span>
+                    <span id="canvasHeader" class="text-[11px] font-semibold text-slate-300">Layar Gambar</span>
                     <button id="clearBtn" onclick="clearCanvasAction()" class="text-[10px] bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded hover:bg-rose-500/30 transition">
-                        <i class="fa-solid fa-trash mr-1"></i> Hapus
+                        <i class="fa-solid fa-trash mr-0.5"></i> Hapus
                     </button>
                 </div>
 
-                <!-- Kontainer Kanvas Landscape / Persegi Panjang -->
-                <div id="canvasContainer" class="relative w-full bg-white rounded-xl overflow-hidden border border-slate-700 flex-1 min-h-[160px] max-h-[220px]">
+                <!-- Kontainer Kanvas -->
+                <div id="canvasContainer" class="relative w-full bg-white rounded-lg overflow-hidden border border-slate-700 flex-1">
                     <canvas id="paintCanvas" class="w-full h-full cursor-crosshair touch-none absolute inset-0"></canvas>
                 </div>
 
-                <!-- Color & Tools Compact -->
-                <div id="drawingTools" class="mt-1.5 flex flex-wrap items-center justify-between gap-1 bg-slate-900/60 p-1.5 rounded-xl border border-slate-700/50">
-                    <div class="flex items-center gap-1.5">
-                        <button onclick="setColor('#000000', this)" class="color-btn w-5 h-5 rounded-full bg-black border border-slate-400 ring-2 ring-indigo-400" data-color="#000000"></button>
-                        <button onclick="setColor('#ef4444', this)" class="color-btn w-5 h-5 rounded-full bg-red-500" data-color="#ef4444"></button>
-                        <button onclick="setColor('#3b82f6', this)" class="color-btn w-5 h-5 rounded-full bg-blue-500" data-color="#3b82f6"></button>
-                        <button onclick="setColor('#10b981', this)" class="color-btn w-5 h-5 rounded-full bg-emerald-500" data-color="#10b981"></button>
-                        <button onclick="setColor('#f59e0b', this)" class="color-btn w-5 h-5 rounded-full bg-amber-500" data-color="#f59e0b"></button>
-                        <button onclick="setColor('#ffffff', this)" class="color-btn w-5 h-5 rounded-full bg-white border border-slate-600 flex items-center justify-center text-[10px] text-slate-800" data-color="#ffffff" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
-                        <button id="fillToolBtn" onclick="toggleFillTool()" class="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] text-white" title="Cat Tumpah"><i class="fa-solid fa-fill-drip"></i></button>
+                <!-- Color & Tools Compact (Nempel Tepat di Bawah Kanvas) -->
+                <div id="drawingTools" class="mt-1 flex flex-wrap items-center justify-between gap-1 bg-slate-900/80 p-1 rounded-lg border border-slate-700/50 flex-shrink-0">
+                    <div class="flex items-center gap-1">
+                        <button onclick="setColor('#000000', this)" class="color-btn w-4.5 h-4.5 rounded-full bg-black border border-slate-400 ring-2 ring-indigo-400" data-color="#000000"></button>
+                        <button onclick="setColor('#ef4444', this)" class="color-btn w-4.5 h-4.5 rounded-full bg-red-500" data-color="#ef4444"></button>
+                        <button onclick="setColor('#3b82f6', this)" class="color-btn w-4.5 h-4.5 rounded-full bg-blue-500" data-color="#3b82f6"></button>
+                        <button onclick="setColor('#10b981', this)" class="color-btn w-4.5 h-4.5 rounded-full bg-emerald-500" data-color="#10b981"></button>
+                        <button onclick="setColor('#f59e0b', this)" class="color-btn w-4.5 h-4.5 rounded-full bg-amber-500" data-color="#f59e0b"></button>
+                        <button onclick="setColor('#ffffff', this)" class="color-btn w-4.5 h-4.5 rounded-full bg-white border border-slate-600 flex items-center justify-center text-[9px] text-slate-800" data-color="#ffffff" title="Penghapus"><i class="fa-solid fa-eraser"></i></button>
+                        <button id="fillToolBtn" onclick="toggleFillTool()" class="w-4.5 h-4.5 rounded-full bg-indigo-600 flex items-center justify-center text-[9px] text-white" title="Cat Tumpah"><i class="fa-solid fa-fill-drip"></i></button>
                     </div>
                     <div class="flex items-center gap-1">
-                        <button onclick="setLineWidth(3)" class="px-2 py-0.5 bg-slate-700 text-[10px] rounded font-bold">Kecil</button>
-                        <button onclick="setLineWidth(6)" class="px-2 py-0.5 bg-slate-700 text-[10px] rounded font-bold">Sedang</button>
-                        <button onclick="setLineWidth(10)" class="px-2 py-0.5 bg-slate-700 text-[10px] rounded font-bold">Besar</button>
+                        <button onclick="setLineWidth(3)" class="px-1.5 py-0.5 bg-slate-700 text-[9px] rounded font-bold">Kecil</button>
+                        <button onclick="setLineWidth(6)" class="px-1.5 py-0.5 bg-slate-700 text-[9px] rounded font-bold">Sedang</button>
+                        <button onclick="setLineWidth(10)" class="px-1.5 py-0.5 bg-slate-700 text-[9px] rounded font-bold">Besar</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Panel Status & Kolom Tebakan (Selalu Tampak di Bawah Tanpa Scroll) -->
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl p-2.5 flex flex-col justify-between shadow-md flex-shrink-0">
-                <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-xl p-2 text-center text-xs min-h-[40px] flex items-center justify-center">
+            <!-- Panel Status & Kolom Tebakan (Nempel Tepat di Bawah Palet Warna, Tanpa Sisa Ruang Kosong Bawah) -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-2 flex flex-col justify-between shadow-sm flex-shrink-0">
+                <div id="guessBox" class="bg-slate-900 border border-slate-700 rounded-lg p-1.5 text-center text-[11px] min-h-[32px] flex items-center justify-center">
                     <span class="text-slate-500 italic">Menunggu permainan...</span>
                 </div>
 
-                <div id="guesserInputBox" class="mt-2 pt-1 border-t border-slate-700">
-                    <div class="flex gap-1.5">
-                        <input type="text" id="guessInput" placeholder="Ketik tebakan di sini..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-indigo-500">
-                        <button onclick="submitGuessAction()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded-xl font-bold text-xs text-white">Kirim</button>
+                <div id="guesserInputBox" class="mt-1 pt-1 border-t border-slate-700">
+                    <div class="flex gap-1">
+                        <input type="text" id="guessInput" placeholder="Ketik tebakan di sini..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:border-indigo-500">
+                        <button onclick="submitGuessAction()" class="bg-indigo-600 hover:bg-indigo-500 px-3 py-1 rounded-lg font-bold text-xs text-white">Kirim</button>
                     </div>
                 </div>
             </div>
@@ -284,10 +284,10 @@
             const btn = document.getElementById('readyBtn');
             if (isP1Ready) {
                 btn.innerText = isP2Ready ? "MEMULAI..." : "MENUNGGU DEDE...";
-                btn.className = "w-full max-w-sm py-3 rounded-xl font-bold text-sm bg-slate-700 text-slate-400 cursor-not-allowed";
+                btn.className = "w-full max-w-xs py-2.5 rounded-xl font-bold text-xs bg-slate-700 text-slate-400 cursor-not-allowed";
             } else {
                 btn.innerText = "SAYA SIAP";
-                btn.className = "w-full max-w-sm py-3 rounded-xl font-bold text-sm bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg";
+                btn.className = "w-full max-w-xs py-2.5 rounded-xl font-bold text-xs bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-md";
             }
         }
 
@@ -362,7 +362,7 @@
 
             choices.forEach(word => {
                 const btn = document.createElement('button');
-                btn.className = "p-2.5 bg-slate-700 hover:bg-indigo-600 rounded-xl font-bold text-xs text-white transition";
+                btn.className = "p-2 bg-slate-700 hover:bg-indigo-600 rounded-lg font-bold text-xs text-white transition";
                 btn.innerText = word;
                 btn.onclick = () => selectWord(word);
                 container.appendChild(btn);
@@ -409,7 +409,6 @@
                 gameState.scores[guesserName] += addedPoint;
                 autoFinishRound(`${guesserName} BENAR! (+${addedPoint} Poin)`, true, guess);
             } else {
-                // JIKA SALAH, RONDE SELESAI DAN BERGANTI GILIRAN SEPERTI DIMINTA
                 autoFinishRound(`${guesserName} SALAH menebak. Jawabannya: ${gameState.selectedWord}`, false, guess);
             }
         }
@@ -440,7 +439,7 @@
                     syncStateToClient();
                     renderGameUI();
                 }
-            }, 2500);
+            }, 2000);
         }
 
         function handleCanvasClick(e) {
@@ -450,7 +449,7 @@
             if (isFillMode) {
                 performFloodFill(Math.floor(pos.x * canvas.width), Math.floor(pos.y * canvas.height), currentColor);
                 isFillMode = false;
-                document.getElementById('fillToolBtn').classList.remove('ring-4', 'ring-amber-400');
+                document.getElementById('fillToolBtn').classList.remove('ring-2', 'ring-amber-400');
             } else {
                 drawing = true;
                 addStroke(pos.x, pos.y, false);
