@@ -13,7 +13,9 @@
     <!-- Header -->
     <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md">N</div>
+            <div class="w-10 h-10 rounded-full overflow-hidden bg-indigo-600 border-2 border-indigo-400 shadow-md flex items-center justify-center">
+                <img src="player1.png" alt="Nadilla" class="w-full h-full object-cover">
+            </div>
             <div>
                 <h1 class="font-bold text-lg leading-tight text-indigo-300">Nadilla (Player 1)</h1>
                 <p id="roleBadge" class="text-xs text-slate-400">Status Sync: <span id="connStatus" class="text-amber-400 font-bold">Menghubungkan...</span></p>
@@ -250,6 +252,8 @@
                 renderGameUI();
                 if (gameState.status === 'PLAYING' && !timerInterval) {
                     startTimer();
+                } else if (gameState.status !== 'PLAYING' && timerInterval) {
+                    clearInterval(timerInterval);
                 }
             }
         }
@@ -272,11 +276,8 @@
             document.getElementById('p2StatusText').className = isP2Ready ? "font-bold text-emerald-400" : "font-bold text-amber-400";
 
             const btn = document.getElementById('readyBtn');
-            if (isP2Ready && !isP1Ready) {
-                btn.innerText = "MULAI SEKARANG!";
-                btn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-xl animate-bounce";
-            } else if (isP1Ready) {
-                btn.innerText = "MENUNGGU DEDE...";
+            if (isP1Ready) {
+                btn.innerText = isP2Ready ? "MEMULAI PERMAINAN..." : "MENUNGGU DEDE SIAP...";
                 btn.className = "w-full max-w-md py-4 rounded-2xl font-black text-lg bg-slate-700 text-slate-400 cursor-not-allowed";
             } else {
                 btn.innerText = "SAYA SIAP";
@@ -376,7 +377,7 @@
                     gameState.timeLeft--;
                     document.getElementById('timerText').innerText = `00:${gameState.timeLeft < 10 ? '0' + gameState.timeLeft : gameState.timeLeft}`;
                 } else {
-                    autoFinishRound("Waktu Habis!");
+                    autoFinishRound("Waktu Habis! (+0 Poin)");
                 }
             }, 1000);
         }
@@ -385,15 +386,23 @@
             gameState.pendingGuess = guess;
             const guessClean = guess.trim().toLowerCase();
             const targetClean = gameState.selectedWord.trim().toLowerCase();
+            const guesserName = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
 
             if (guessClean === targetClean) {
                 let addedPoint = gameState.timeLeft >= 30 ? 10 : 5;
-                const guesserName = gameState.currentArtist === "Nadilla" ? "Muhammad Dede Imran" : "Nadilla";
                 gameState.scores[guesserName] += addedPoint;
-
                 autoFinishRound(`${guesserName} BENAR! (+${addedPoint} Poin) Jawab: ${gameState.selectedWord}`);
             } else {
+                gameState.revealedGuess = `${guesserName} menebak "${guess}" (Salah: +0 Poin)`;
                 renderGameUI();
+                
+                setTimeout(() => {
+                    if (gameState.status === 'PLAYING') {
+                        gameState.pendingGuess = '';
+                        gameState.revealedGuess = '';
+                        renderGameUI();
+                    }
+                }, 2000);
             }
         }
 
@@ -402,7 +411,6 @@
             gameState.revealedGuess = msg;
             renderGameUI();
 
-            // Tunggu 3 detik agar pesan benar/waktu habis terbaca, lalu lanjut otomatis
             setTimeout(() => {
                 gameState.currentRound++;
                 if (gameState.currentRound > 20) {
